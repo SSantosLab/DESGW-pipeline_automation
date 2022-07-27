@@ -43,8 +43,14 @@ def run_dagsh(exps_to_run, finished_exps, exp_set):
             f.close()
             #print so it knows its running mostly for testing
             print("All done with " + command[0])
-            finished_exps.put(exp_set[current_exp] + ' is done by ' + current_process().name)
             
+            new_command = ['jobsub_submit_dag -G des --role=DESGW file://desgw_pipeline_' + exp_set[current_exp] + '.dag']
+            
+            print("Running" + new_command[0])
+            os.system(new_command)
+            print("Finished with" + new_command[0])
+            finished_exps.put(exp_set[current_exp] + ' is done by ' + current_process().name)
+           
             #pause the system for a bit so that it has time to finish executing 
             time.sleep(0.5)
     return True
