@@ -118,3 +118,21 @@ def main():
 
 if __name__ == '__main__':
     main()
+    
+data = []
+with open('exposures.list') as f:
+    lines = f.readlines()
+    for exp in exp_set:
+        for line in lines:
+            if str(exp) in line:
+                data.append(line)
+
+exp_info = []
+other_info = []
+
+for line in data:
+    data_extracted = line.split()
+    exp_info.append(data_extracted[0] + ' ' + data_extracted[5])
+    other_info.append('nite:' + data_extracted[1])
+
+#exp_info is your list with (exp_num band, exp_num band), other_info is the nite and other info that i will get from dagmaker upon combining codes
