@@ -13,7 +13,7 @@ Next, the code asks if you'd like to update any other parameters. For a list of 
 ### Parallel-Processing Dagmaker and Submitting Dags
 Before running the processes outlined in this section, it's necessary to have a DESGW proxy. It's also necessary to run:
 
-  source setup_img_proc.sh
+    source setup_img_proc.sh
   
 The automation will run this for you. However, if, in doing so, it raises an exception, it is important to manually run it. Without sourcing setup_img_proc, dag creation and submission will fail.
 
