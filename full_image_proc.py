@@ -15,6 +15,7 @@ from multiprocessing import Pool,Process, Queue, current_process, Semaphore
 import time
 import queue
 import csv
+from pathlib import Path
 
 test_check = (raw_input("Would you like to update dagmaker.rc? [y/n]"))
 test = test_check
@@ -457,4 +458,5 @@ lines[2]=data[18]
 
 with open(str(outputdir/'outputs.txt'), 'w') as file:
      file.writelines(lines)
+     file.close()
 #exp_info is your list with (exp_num band, exp_num band), other_info is the nite and other info that i will get from dagmaker upon combining codes
