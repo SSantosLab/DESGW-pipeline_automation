@@ -437,11 +437,24 @@ with open('exposures.list') as f:
                 data.append(line)
 
 exp_info = []
-other_info = []
+nite = []
 
 for line in data:
     data_extracted = line.split()
     exp_info.append(data_extracted[0] + ' ' + data_extracted[5])
-    other_info.append('nite:' + data_extracted[1])
+    nite.append('nite:' + data_extracted[1])
 
+outputdir = Path('./image_proc_outputs/')
+# Make the output dir if it doesn't exist
+outputdir.mkdir(exist_ok=True)
+
+with open(str(outputdir/'outputs.txt')) as f:
+    lines = f.readlines()
+    
+lines[0]=exp_info
+lines[1]=nite
+lines[2]=data[18]
+
+with open(str(outputdir/'outputs.txt'), 'w') as file:
+     file.writelines(lines)
 #exp_info is your list with (exp_num band, exp_num band), other_info is the nite and other info that i will get from dagmaker upon combining codes
