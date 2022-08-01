@@ -17,7 +17,7 @@ import queue
 import csv
 from pathlib import Path
 
-test_check = (raw_input("Would you like to update dagmaker.rc? [y/n]"))
+test_check = (input("Would you like to update dagmaker.rc? [y/n]"))
 test = test_check
 if test == ('n'):
 #         #des gw testing suite and season number 
@@ -46,7 +46,7 @@ elif test == ('n'):
     used_seasons.append(integer_value)
 
     #save the event data along with the season number 
-    inputted_season = (raw_input("Enter desired season. If you have no input in mind, enter 'random':"))
+    inputted_season = (input("Enter desired season. If you have no input in mind, enter 'random':"))
     if inputted_season.isdigit():
         SEASON = int(inputted_season)
     elif inputted_season == ('random'):
@@ -99,7 +99,7 @@ elif test == ('n'):
 else:
     raise Exception('Please restart and enter y/n')
     
-update_other_stuff = (raw_input("Would you like to update any other parameters? If you know something you'd like to update, type it here. Enter 'n' for no. For syntax/a list of possible updates, type 'help'."))
+update_other_stuff = (input("Would you like to update any other parameters? If you know something you'd like to update, type it here. Enter 'n' for no. For syntax/a list of possible updates, type 'help'."))
 update = update_other_stuff 
 
 JOBSUBS_OPTS = None
@@ -123,7 +123,7 @@ TEFF_CUT_u= None
 list_parameters = [TEFF_CUT_g, TEFF_CUT_i, TEFF_CUT_r, TEFF_CUT_Y, TEFF_CUT_z, TEFF_CUT_u, JOBSUBS_OPTS, RM_MYTEMP, JOBSUBS_OPTS_SE, RESOURCES, IGNORECALIB, DESTCACHE, TWINDOW, MIN_NITE, MAX_NITE, SKIP_INCOMPLETE_SE, DO_HEADER_CHECK]
 
 def update_parameter(parameter):
-    new_parameter_input = (raw_input("What would you like to update to?")) 
+    new_parameter_input = (input("What would you like to update to?")) 
     new_parameter = new_parameter_input
     return new_parameter
 
@@ -384,7 +384,7 @@ if output == 0:
 else:
     raise ValueError('Something went wrong with setup_img_proc.sh. Please manually run or try again.')
 
-inputted_exp_list = raw_input("Please input the filepath to your exp.list file")
+inputted_exp_list = (input("Please input the filepath to your exp.list file"))
 
 # filepath = 'exposures_jul27.list'
 filepath = inputted_exp_list
