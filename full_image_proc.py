@@ -449,14 +449,16 @@ outputdir = Path('./image_proc_outputs/')
 # Make the output dir if it doesn't exist
 outputdir.mkdir(exist_ok=True)
 
-with open(str(outputdir/'outputs.txt')) as f:
-    lines = f.readlines()
+lines = {}
     
 lines[0]=exp_info
 lines[1]=nite
 lines[2]=data[18]
 
 with open(str(outputdir/'outputs.txt'), 'w') as file:
-     file.writelines(lines)
-     file.close()
+    for line in lines:
+        print(str(lines[line]))
+        file.writelines(str(lines[line]+'\n'))
+#          file.write(line)
+    file.close()
 #exp_info is your list with (exp_num band, exp_num band), other_info is the nite and other info that i will get from dagmaker upon combining codes
