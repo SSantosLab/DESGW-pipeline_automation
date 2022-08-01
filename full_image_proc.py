@@ -351,9 +351,20 @@ def run_dagsh(exps_to_run, finished_exps, exp_set):
             print("All done with " + command[0])
             
             new_command = ['jobsub_submit_dag -G des --role=DESGW file://desgw_pipeline_' + exp_set[current_exp] + '.dag']
+#             new_command = ['/cvmfs/fermilab.opensciencegrid.org/products/common/prd/jobsub_client/v1_3/NULL/jobsub_submit_dag -G des --role=DESGW file://desgw_pipeline_' + exp_set[current_exp] + '.dag']
             
+
             print("Running" + new_command[0])
-            os.system(new_command[0])
+#             os.system(new_command[0])
+            
+            process = subprocess.Popen(new_command[0], bufsize=1, shell=True, universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            stdout, stderr = process.communicate()
+            f = open('dagmaker_'+exp_set[current_exp]+'.out', 'w')
+            f.write(stdout)
+            if stderr != None:
+                f.write(stderr)
+            f.close()
+            
             print("Finished with" + new_command[0])
             finished_exps.put(exp_set[current_exp] + ' is done by ' + current_process().name)
            
