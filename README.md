@@ -1,7 +1,7 @@
 # DESGW-image-processing
 ---
 ## Introduction to this automation:
-Our codes work with user input to, theoretically, automate the DESGW pipeline (the image processing and post processing steps). The goal of this automation is to reduce user input. However, there is still some user input required while running, which will be specified along with each step.
+Our codes work with user input to, theoretically, automate the DESGW pipeline (the image processing and post processing steps). The goal of this automation is to reduce user input and streamline observation response. Some user input is required for the automation, which will be specified along with each step.
 ## Image Processing Code Explanation:
 ### Updating dagmaker.rc
 Dagmaker.rc is a config file that sets the parameters necessary for later creating a dag with dagmaker.sh. This section explains how the image processing code searches for these input parameters from the user in order to update the config file. 
