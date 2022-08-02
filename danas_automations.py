@@ -249,8 +249,8 @@ os.system('mv ' + str(postproc_season_file) + ' ./Post-Processing')
 os.system('mv ' + str(current_exposures) + ' ./Post-Processing')
 
 #setup for Post Processing
-os.system('source ./Post-Processing/diffimage_setup.sh')
-print('running diffimage_setup.sh\n')
+os.system('source ./Post-Processing/diffimg_setup.sh')
+print('running diffimg_setup.sh\n')
 
 update_forcephoto_links = input('Are you running post processing for new exposures? (aka: run ./update_forcephoto_links.sh?) y/n: ')
 if update_forcephoto_links == ('y'):
