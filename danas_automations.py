@@ -198,6 +198,7 @@ general["exposures_listfile"] = exposures_listfile
 bandslist = str(bandslist)
 bandslist = bandslist.strip("[]'")
 bandslist = bandslist.replace("'","")
+bandslist += ' ;'
 
 general["bands"] = str(bandslist)
 
