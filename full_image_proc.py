@@ -496,13 +496,19 @@ for line in data:
     exp_info.append(data_extracted[0] + ' ' + data_extracted[5])
     nite.append('nite:' + data_extracted[1])
 
-outputdir = Path('./image_proc_outputs/')
-# Make the output dir if it doesn't exist
-outputdir.mkdir(exist_ok=True)
+output_check = os.path.exists('./image_proc_outputs')
+if output_check:
+    continue
+else:
+    os.mkdir('./image_proc_outputs')
+    
+outputdir = './image_proc_outputs/'
+
+
 
 output_path = str(outputdir/'outputs.txt')
 
 with open(str(outputdir/'outputs.txt'), 'a') as file:
-    file.write(exp_info + '\n' + nite + '\n' + SEASON + '\n\')
+    file.write(exp_info + '\\n' + nite + '\\n' + SEASON + '\\n')
     file.close()
 #exp_info is your list with (exp_num band, exp_num band), other_info is the nite and other info that i will get from dagmaker upon combining codes
