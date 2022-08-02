@@ -17,7 +17,7 @@ import queue
 import csv
 from pathlib import Path
 
-test_check = (input("Would you like to update dagmaker.rc? [y/n]"))
+test_check = (raw_input("Would you like to update dagmaker.rc? [y/n]"))
 test = test_check
 if test == ('n'):
 #         #des gw testing suite and season number 
@@ -65,27 +65,27 @@ elif test == ('n'):
             i = 0
         
         elif int(SEASON) in used_seasons:                         
-            answer = (input("Input matches previously used value. Proceeding with this Season input will overwrite previous files. Would you like to keep this input and overwrite previous files? [y/n]:"))
+            answer = (raw_input("Input matches previously used value. Proceeding with this Season input will overwrite previous files. Would you like to keep this input and overwrite previous files? [y/n]:"))
             answer_input = answer
             
             if answer_input == ('y'):
-                answer_input_2 = (input("Are you SURE you want to overwrite previous values and continue with this number? [y/n]:"))
+                answer_input_2 = (raw_input("Are you SURE you want to overwrite previous values and continue with this number? [y/n]:"))
                 answer_2 = answer_input_2
                 if answer_2 == ('y'):
-                    new_season = (input("YOU CAn'T OVERWRITE pRevIouS FILeS!!!! Pick a new number."))
+                    new_season = (raw_input("YOU CAn'T OVERWRITE pRevIouS FILeS!!!! Pick a new number."))
                     new_value = int(new_season)
                     SEASON = new_value
                     i = 0   
                     
                 else:
-                    new_season = (input("Please enter a new value for SEASON:"))
+                    new_season = (raw_input("Please enter a new value for SEASON:"))
                     new_value = int(new_season)
                     SEASON = new_value
                     i = 0        
             elif answer_input != ('n'):  
                 raise Exception('You gotta enter y or n or the code will break for now')
             else:
-                new_input = input("Please enter a new value for SEASON:")
+                new_input = raw_input("Please enter a new value for SEASON:")
                 SEASON = new_input
                 i = 0
             
@@ -130,10 +130,10 @@ def update_parameter(parameter):
 
     
 def ask_restart():
-    restart_or_no = (input('Would you like to update parameters? [y/n/help]'))
+    restart_or_no = (raw_input('Would you like to update parameters? [y/n/help]'))
     answer_restart = restart_or_no
     if restart_or_no == ('y'):
-        update_more = (input("Would you like to update any other parameters? If you know something you'd like to update, type it here. For syntax/a list of possible updates, type 'help'."))
+        update_more = (raw_input("Would you like to update any other parameters? If you know something you'd like to update, type it here. For syntax/a list of possible updates, type 'help'."))
         update_value = update_more
         i = 0
     elif restart_or_no == ('n'):
@@ -391,7 +391,7 @@ if output == 0:
 else:
     raise ValueError('Something went wrong with setup_img_proc.sh. Please manually run or try again.')
 
-inputted_exp_list = (input("Please input the filepath to your exp.list file"))
+inputted_exp_list = (raw_input("Please input the filepath to your exp.list file"))
 
 # filepath = 'exposures_jul27.list'
 filepath = inputted_exp_list
