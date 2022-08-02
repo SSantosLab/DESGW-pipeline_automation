@@ -59,7 +59,6 @@ except:
     dpSeason = input('Season: ')
 
 
-#What comes from Elise in a file:
 
 
 # In[136]:
@@ -170,17 +169,13 @@ with open(current_exposures, 'w') as f:
 
 #move .ini file into Post-Processing
 
-#ask user for
 season = str(season)
-ligoid = 'GW170814'
-triggerid = 'G298048'
-propid = '2017B-0110'
-triggermjd = '57979.437'
 
-#ligoid = input('ligoid (ex. GW170814): ')
-#triggerid = input('triggerid (ex. G298048): ')
-#propid = input('propid (ex. 2017B-0110): ')
-#triggermjd = input('triggermjd (ex. 57979.437): ')
+#ask user for
+ligoid = input('ligoid (ex. GW170814): ')
+triggerid = input('triggerid (ex. G298048): ')
+propid = input('propid (ex. 2017B-0110): ')
+triggermjd = input('triggermjd (ex. 57979.437): ')
 
 print('creating .ini file with completed exposures list\n')
 
@@ -266,9 +261,11 @@ if update_forcephoto_links == ('y'):
 try:
     SKIPTO_flag
 except NameError:
-    print('nohup python ./Post-Processing/run_postproc.py --outputdir outdir --season '+ str(season)+ ' &> postproc_run.out &')
+    print("\nRunning run_postproc.py\n")
+    os.system('nohup python ./Post-Processing/run_postproc.py --outputdir outdir --season '+ str(season)+ ' &> postproc_run.out &')
 else:
-    print('nohup python ./Post-Processing/run_postproc.py --SKIPTO ' + str(SKIPTO_flag) + ' --outputdir outdir --season '+ str(season)+ ' &> postproc_run.out &')
+    print("\nRunning run_postproc.py\n")
+    os.system('nohup python ./Post-Processing/run_postproc.py --SKIPTO ' + str(SKIPTO_flag) + ' --outputdir outdir --season '+ str(season)+ ' &> postproc_run.out &')
 
 
 # In[142]:
