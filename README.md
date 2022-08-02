@@ -25,5 +25,34 @@ The code works by creating a queue object of all of the exposures within the .li
 After the previous steps, the code looks in the exposures.list file contained within gw_workflow for information necessary for post-processing. It outputs a list, containing each exposure with its respective band in the format [expnum band, expnum band, expnum band]. It also passes on the NITE and SEASON to post-processing. 
 
 ## Post Processing Code Explanation:
+Once Image Processing has completed running, the post processing automation retreives the exposures and their bands in the format above, along with the nite and season from the output file. 
+
+If there is no output file in the expected format, the code will prompt the user to provide this information. 
+
+### Checking CCDs:
+The automation then looks through the files in the directories with format '/pnfs/des/persistent/gw/exp/NITE/EXPOSURE_NUMBER/dpSEASON/BAND_CCD' to print which of the 62 total CCDs were successfully completed, failed, or incomplete. If the code says there are fewer than 62 CCDs, some of them were likely broken. 
+
+### Checking Forcefiles
+If enough CCDs successfully completed for an exposure, the code looks for the .psf and .fits "forcefiles" in the directories with format '/pnfs/des/persistent/gw/forcephoto/images/dpSEASON/NITE/EXPOSURE/'. If enough of them have been completed, then those exposures will move on to post processing. The code prints if the exposures will move to post-processing, and if not, why, which may be because there are not enough complete forcephoto files or that there are more than expected, so this must be investigated by the user. It also prints which forcephoto files have not yet been completed if there are enough to move to post-processing but some are still incomplete. This is to give the user a sense for the "completeness" of an exposure's forcefiles. 
+
+### File Creation
+The code then goes on to create a custom exposure.list file that contains all of the exposures that are ready to be post processed. This, along with user inputted information and the bands, is put into a postproc_"season#".ini file based on the template_postproc.ini file whcih must also be in this directory.
+
+### SKIPTO
+The code moves on to check if Post Processing has been run on these exposures before by checking for certain files in the out directory indicated by the .ini file. Those files would have only been created during certain steps of post processing, so it is safe to skip those steps in future runs of the pipeline. The code then includes the SKIPTO value as an flag when it runs run_postproc.py. If the code determines that the exposures must run from scratch, run_postproc.py runs without a SKIPTO flag and starts at the beginning.
+
+### Setup before run_postproc.py
+The code moves .ini file and .list file into the Post-Processing directory. It runs:
+
+    diffimg_setup.sh
+    
+and then if requested, runs
+
+    update_forcephoto_links.sh
+
+It then runs run_postproc.py in the form of
+
+    nohup python ./Post-Processing/run_postproc.py --outputdir outdir --season '+ str(season)+ ' &> postproc_run.out &'
+
 ## How to Use the Repo:
 
