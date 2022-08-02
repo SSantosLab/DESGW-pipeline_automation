@@ -353,20 +353,27 @@ def run_dagsh(exps_to_run, finished_exps, exp_set):
             
             new_command = ['jobsub_submit_dag -G des --role=DESGW file://desgw_pipeline_' + exp_set[current_exp] + '.dag']
 #             new_command = ['/cvmfs/fermilab.opensciencegrid.org/products/common/prd/jobsub_client/v1_3/NULL/jobsub_submit_dag -G des --role=DESGW file://desgw_pipeline_' + exp_set[current_exp] + '.dag']
-            
+
+            cwd = os.getcwd()
+            filepath = [cwd + '/desgw_pipeline_' + exp + '.dag']
+            isExist = os.path.exists(filepath[0])
+    
+            if isExist:
+                path = 'jobsub_submit_dag'
+                new_command = [path + ' -G des --role=DESGW file:/' + cwd + '/desgw_pipeline_' + exp + '.dag']
+                print("Running" + new_command[0])
+                os.system(new_command[0])
+                print("Finished with" + new_command[0])
+#         subprocess.check_output(new_command[0], stderr=subprocess.STDOUT)
+        
+            else:
+                raise ValueError('Something went wrong with finding the desgw_pipeline.dag file for exposure'+exp+'.Please manually run or try again.')
+        
+    
 
             print("Running" + new_command[0])
 #             os.system(new_command[0])
             
-            process = subprocess.Popen(new_command[0], bufsize=1, shell=True, universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            stdout, stderr = process.communicate()
-            f = open('dagmaker_'+exp_set[current_exp]+'.out', 'w')
-            f.write(stdout)
-            if stderr != None:
-                f.write(stderr)
-            f.close()
-            
-            print("Finished with" + new_command[0])
             finished_exps.put(exp_set[current_exp] + ' is done by ' + current_process().name)
            
             #pause the system for a bit so that it has time to finish executing 
@@ -425,8 +432,17 @@ def main():
 
     return True
 
-
+command_2 = ['. /cvmfs/des.opensciencegrid.org/eeups/startupcachejob31i.sh']
+print("Running" + command_2[0])
+output = os.system(command_2[0])
+if output == 0:
+    os.system(command_2[0])
+else:
+    print(output)
+    raise ValueError('Something went wrong with sourcing. Please manually run or try again.')
+    
 if __name__ == '__main__':
+
     main()
     
 data = []
@@ -449,16 +465,8 @@ outputdir = Path('./image_proc_outputs/')
 # Make the output dir if it doesn't exist
 outputdir.mkdir(exist_ok=True)
 
-lines = {}
-    
-lines[0]=exp_info
-lines[1]=nite
-lines[2]=data[18]
 
-with open(str(outputdir/'outputs.txt'), 'w') as file:
-    for line in lines:
-        print(str(lines[line]))
-        file.writelines(str(lines[line]+'\n'))
-#          file.write(line)
+with open(str(outputdir/'outputs.txt'), 'a') as file:
+    file.write(exp_info + '\n' + nite + '\n' + SEASON + '\n\')
     file.close()
 #exp_info is your list with (exp_num band, exp_num band), other_info is the nite and other info that i will get from dagmaker upon combining codes
