@@ -19,7 +19,7 @@ import git
 
 
 #check if gw_workflow folder exists. if it doesnt, clone it from github
-filepath = [../gw_workflow]
+filepath = ['../gw_workflow']
 isExist = os.path.exists(filepath[0])
 if isExist:
     continue
