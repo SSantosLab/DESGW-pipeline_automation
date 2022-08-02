@@ -42,9 +42,17 @@ The code then goes on to create a custom exposure.list file that contains all of
 The code moves on to check if Post Processing has been run on these exposures before by checking for certain files in the out directory indicated by the .ini file. Those files would have only been created during certain steps of post processing, so it is safe to skip those steps in future runs of the pipeline. The code then includes the SKIPTO value as an flag when it runs run_postproc.py. If the code determines that the exposures must run from scratch, run_postproc.py runs without a SKIPTO flag and starts at the beginning.
 
 ### Setup before run_postproc.py
-The code moves .ini file and .list file into the Post-Processing directory. It runs diffimage_setup.sh and if requested, update_forcephoto_links.sh. It then runs run_postproc.py.
+The code moves .ini file and .list file into the Post-Processing directory. It runs:
 
+    diffimg_setup.sh
+    
+and then if requested, runs
 
+    update_forcephoto_links.sh
+
+It then runs run_postproc.py in the form of
+
+    nohup python ./Post-Processing/run_postproc.py --outputdir outdir --season '+ str(season)+ ' &> postproc_run.out &'
 
 ## How to Use the Repo:
 
