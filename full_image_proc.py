@@ -15,14 +15,14 @@ from multiprocessing import Pool,Process, Queue, current_process, Semaphore
 import time
 import queue
 import csv
-import git 
+
 
 
 #check if gw_workflow folder exists. if it doesnt, clone it from github
 filepath = ['../gw_workflow']
 isExist = os.path.exists(filepath[0])
 if isExist:
-    continue
+    gw_path = '../gw_workflow'
 else:
     git_command = ['git clone https://github.com/SSantosLab/gw_workflow.git ../gw_workflow' ]
     git_output = os.system(git_command[0])
@@ -372,7 +372,7 @@ def run_dagsh(exps_to_run, finished_exps, exp_set):
           
             #initialize command
             
-            command = ['./DAGMaker.sh ' + exp_set[current_exp]]
+            command = ['cd '+gw_path; ' ./DAGMaker.sh ' + exp_set[current_exp]]
             
             #process for each command ask nora about this
             print("Running " + command[0])
@@ -394,7 +394,7 @@ def run_dagsh(exps_to_run, finished_exps, exp_set):
             isExist = os.path.exists(filepath[0])
     
             if isExist:
-                path = 'jobsub_submit_dag'
+                path = '../gw_workflow/jobsub_submit_dag'
                 new_command = [path + ' -G des --role=DESGW file:/' + gw_path + '/desgw_pipeline_' + exp_set[current_exp] + '.dag']
                 print("Running" + new_command[0])
                 os.system(new_command[0])
@@ -417,7 +417,7 @@ def run_dagsh(exps_to_run, finished_exps, exp_set):
 
 #source setup img proc, necessary for dagmaker
 cwd = os.getcwd()
-command_source = ['source '+cwd+'/setup_img_proc.sh']
+command_source = ['source '+gw_path+'/setup_img_proc.sh']
 
 #ensure that source setup_diff_img will run by checking if there's a system error raised. 
 output = os.system(command_source[0])
@@ -498,7 +498,7 @@ for line in data:
 
 output_check = os.path.exists('./image_proc_outputs')
 if output_check:
-    continue
+    print('woo')
 else:
     os.mkdir('./image_proc_outputs')
     
