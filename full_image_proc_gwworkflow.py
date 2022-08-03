@@ -369,19 +369,19 @@ def run_dagsh(exps_to_run, finished_exps, exp_set):
 #             new_command = ['/cvmfs/fermilab.opensciencegrid.org/products/common/prd/jobsub_client/v1_3/NULL/jobsub_submit_dag -G des --role=DESGW file://desgw_pipeline_' + exp_set[current_exp] + '.dag']
 
             cwd = os.getcwd()
-            filepath = [cwd + '/desgw_pipeline_' + exp + '.dag']
+            filepath = [cwd + '/desgw_pipeline_' + exp_set[current_exp] + '.dag']
             isExist = os.path.exists(filepath[0])
     
             if isExist:
                 path = 'jobsub_submit_dag'
-                new_command = [path + ' -G des --role=DESGW file:/' + cwd + '/desgw_pipeline_' + exp + '.dag']
+                new_command = [path + ' -G des --role=DESGW file:/' + cwd + '/desgw_pipeline_' + exp_set[current_exp] + '.dag']
                 print("Running" + new_command[0])
                 os.system(new_command[0])
                 print("Finished with" + new_command[0])
 #         subprocess.check_output(new_command[0], stderr=subprocess.STDOUT)
         
             else:
-                raise ValueError('Something went wrong with finding the desgw_pipeline.dag file for exposure'+exp+'.Please manually run or try again.')
+                raise ValueError('Something went wrong with finding the desgw_pipeline.dag file for exposure'+exp_set[current_exp]+'.Please manually run or try again.')
         
     
 
