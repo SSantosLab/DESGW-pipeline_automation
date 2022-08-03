@@ -351,9 +351,9 @@ def run_dagsh(exps_to_run, finished_exps, exp_set):
           
             #initialize command
             
-            command = ['./DAGMaker.sh ' + exp_set[current_exp]]
+            command = [' ./DAGMaker.sh ' + exp_set[current_exp]]
             
-            #process for each command ask nora about this
+            #process for each command 
             print("Running " + command[0])
             process = subprocess.Popen(command, bufsize=1, shell=True, universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             stdout, stderr = process.communicate()
@@ -362,26 +362,28 @@ def run_dagsh(exps_to_run, finished_exps, exp_set):
             if stderr != None:
                 f.write(stderr)
             f.close()
-            #print so it knows its running mostly for testing
+            #print so it knows its running 
             print("All done with " + command[0])
             
+            cwd = os.getcwd()
             new_command = ['jobsub_submit_dag -G des --role=DESGW file://desgw_pipeline_' + exp_set[current_exp] + '.dag']
 #             new_command = ['/cvmfs/fermilab.opensciencegrid.org/products/common/prd/jobsub_client/v1_3/NULL/jobsub_submit_dag -G des --role=DESGW file://desgw_pipeline_' + exp_set[current_exp] + '.dag']
 
-            cwd = os.getcwd()
-            filepath = [cwd + '/desgw_pipeline_' + exp + '.dag']
+            
+            filepath = ['desgw_pipeline_' + exp_set[current_exp] + '.dag']
             isExist = os.path.exists(filepath[0])
     
             if isExist:
-                path = 'jobsub_submit_dag'
-                new_command = [path + ' -G des --role=DESGW file:/' + cwd + '/desgw_pipeline_' + exp + '.dag']
+                path = '/cvmfs/fermilab.opensciencegrid.org/products/common/prd/jobsub_client/v1_3/NULL/jobsub_submit_dag'
+#                 path = 'jobsub_submit_dag'
+                new_command = [path + ' -G des --role=DESGW file://desgw_pipeline_' + exp_set[current_exp] + '.dag']
                 print("Running" + new_command[0])
                 os.system(new_command[0])
                 print("Finished with" + new_command[0])
 #         subprocess.check_output(new_command[0], stderr=subprocess.STDOUT)
         
             else:
-                raise ValueError('Something went wrong with finding the desgw_pipeline.dag file for exposure'+exp+'.Please manually run or try again.')
+                raise ValueError('Something went wrong with finding the desgw_pipeline.dag file for exposure'+exp_set[current_exp]+'.Please manually run or try again.')
         
     
 
@@ -455,6 +457,7 @@ else:
     print(output)
     raise ValueError('Something went wrong with sourcing. Please manually run or try again.')
     
+    
 if __name__ == '__main__':
 
     main()
@@ -473,11 +476,10 @@ nite = []
 for line in data:
     data_extracted = line.split()
     exp_info.append(data_extracted[0] + ' ' + data_extracted[5])
-    nite.append('nite:' + data_extracted[1])
+    nite.append(data_extracted[1])
 
-outputdir = Path('./image_proc_outputs/')
 # Make the output dir if it doesn't exist
-outputdir.mkdir(exist_ok=True)
+
 
 nite = nite[0]
 
@@ -486,9 +488,9 @@ list_info = [str(exp_info), str(nite), str(SEASON)]
 
 output_dir_exists = os.path.exists('./image_proc_outputs/')
 if output_dir_exists:
-    file_exists = os.path.exists('./image_proc_outputs/output')
+    file_exists = os.path.exists('./image_proc_outputs/output.txt')
     if file_exists:
-        with open('./image_proc_outputs/output', 'w') as file:
+        with open('./image_proc_outputs/output.txt', 'w') as file:
             for item in list_info:
                 file.write("%s\n" % item)
       
@@ -496,13 +498,13 @@ if output_dir_exists:
             file.close
     else:
  
-        f = open('./image_proc_outputs/output', 'a')
+        f = open('./image_proc_outputs/output.txt', 'a')
         f.write(str(exp_info + '\\n' + nite + '\\n' + SEASON + '\\n'))
         f.close()
         
 else:
     os.mkdir('./image_proc_outputs/')
-    f = open('./image_proc_outputs/output', 'a')
+    f = open('./image_proc_outputs/output.txt', 'a')
     for item in list_info:
                 f.write("%s\n" % item)
       
