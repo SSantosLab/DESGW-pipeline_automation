@@ -17,7 +17,7 @@ import queue
 import csv
 #from pathlib import Path
 
-test_check = (raw_input("Would you like to update dagmaker.rc? [y/n]"))
+test_check = (raw_input("Would you like to update dagmaker.rc? [y/n]: "))
 test = test_check
 if test == ('n'):
 #         #des gw testing suite and season number 
@@ -65,7 +65,7 @@ elif test == ('n'):
             i = 0
         
         elif int(SEASON) in used_seasons:                         
-            answer = (raw_input("Input matches previously used value. Proceeding with this Season input will overwrite previous files. Would you like to keep this input and overwrite previous files? [y/n]:"))
+            answer = (raw_input("Input matches previously used value. Proceeding with this Season input will overwrite previous files. Would you like to keep this input and overwrite previous files? [y/n]: "))
             answer_input = answer
             
             if answer_input == ('y'):
@@ -97,9 +97,9 @@ elif test == ('n'):
             raise ERROR("Something's gone wrong. Please restart and input a new season number.")
             
 else:
-    raise Exception('Please restart and enter y/n')
+    raise Exception('Please restart and enter [y/n]. ')
     
-update_other_stuff = (raw_input("Would you like to update any other parameters? If you know something you'd like to update, type it here. Enter 'n' for no. For syntax/a list of possible updates, type 'help'."))
+update_other_stuff = (raw_input("Would you like to update any other parameters? If you know something you'd like to update, type it here. Enter 'n' for no. For syntax/a list of possible updates, type 'help'." ))
 update = update_other_stuff 
 
 JOBSUBS_OPTS = None
@@ -123,14 +123,14 @@ TEFF_CUT_u= None
 list_parameters = [TEFF_CUT_g, TEFF_CUT_i, TEFF_CUT_r, TEFF_CUT_Y, TEFF_CUT_z, TEFF_CUT_u, JOBSUBS_OPTS, RM_MYTEMP, JOBSUBS_OPTS_SE, RESOURCES, IGNORECALIB, DESTCACHE, TWINDOW, MIN_NITE, MAX_NITE, SKIP_INCOMPLETE_SE, DO_HEADER_CHECK]
 
 def update_parameter(parameter):
-    new_parameter_input = (input("What would you like to update to?")) 
+    new_parameter_input = (input("What would you like to update to? ")) 
     new_parameter = new_parameter_input
     return new_parameter
 
 
     
 def ask_restart():
-    restart_or_no = (raw_input('Would you like to update parameters? [y/n/help]'))
+    restart_or_no = (raw_input('Would you like to update parameters? [y/n/help] '))
     answer_restart = restart_or_no
     if restart_or_no == ('y'):
         update_more = (raw_input("Would you like to update any other parameters? If you know something you'd like to update, type it here. For syntax/a list of possible updates, type 'help'."))
@@ -275,41 +275,55 @@ with open(filepath, 'r') as file:
 # data[18]=f'SEASON={SEASON}\n'
 season_temp = str(SEASON)
 data[18]='SEASON='+season_temp+'\n'
+print('Printing your updates:')
 print (data[18])
 
-print(list_parameters)
-
-#if  RM_MYTEMP != (None):
-#    data[23]=f'RM_MYTEMP={RM_MYTEMP}\n'
-#if  JOBSUBS_OPTS != (None):
-#    data[25]=f'JOBSUB_OPTS={JOBSUB_OPTS}\n'
-#if  JOBSUBS_OPTS_SE != (None):
-#    data[26]=f'JOBSUB_OPTS_SE={JOBSUB_OPTS_SE}\n'
-#if  RESOURCES != (None):
-#    data[28]=f'RESOURCES={RESOURCES}\n'
-#if  IGNORECALIB != (None):
-#    data[29]=f'IGNORECALIB={IGNORECALIB}\n'
-#if  DESTCACHE != (None):
-#    data[30]=f'DESTCACHE={DESTCACHE}\n'
-#if  TWINDOW != (None):
-#    data[45]=f'TWINDOW={TWINDOW}\n'
-#if  SKIP_INCOMPLETE_SE != (None):
-#    data[57]=f'SKIP_INCOMPLETE_SE={SKIP_INCOMPLETE_SE}\n'
-#if  DO_HEADER_CHECK != (None):
-#    data[60]=f'DO_HEADER_CHECK={DO_HEADER_CHECK}\n'
+if  RM_MYTEMP != (None):
+    data[23]='RM_MYTEMP='+RM_MYTEMP+'\\n'
+    print(data[23])
+if  JOBSUBS_OPTS != (None):
+    data[25]='JOBSUB_OPTS='+JOBSUB_OPTS+'\\n'
+    print(data[25])
+if  JOBSUBS_OPTS_SE != (None):
+    data[26]='JOBSUB_OPTS_SE='+JOBSUB_OPTS_SE+'\\n'
+    print(data[26])
+if  RESOURCES != (None):
+    data[28]='RESOURCES='+RESOURCES+'\\n'
+    print(data[28])
+if  IGNORECALIB != (None):
+    data[29]='IGNORECALIB='+IGNORECALIB+'\\n'
+    print(data[29])
+if  DESTCACHE != (None):
+    data[30]='DESTCACHE='+DESTCACHE+'\\n'
+    print(data[30])
+if  TWINDOW != (None):
+    data[45]='TWINDOW='+TWINDOW+'\\n'
+    print(data[45])
+if  SKIP_INCOMPLETE_SE != (None):
+    data[57]='SKIP_INCOMPLETE_SE='+SKIP_INCOMPLETE_SE+'\\n'
+    print(data[57])
+if  DO_HEADER_CHECK != (None):
+    data[60]='DO_HEADER_CHECK='+DO_HEADER_CHECK+'\\n'
+    print(data[60])
     
-#if  TEFF_CUT_g != (None):
-#    data[39]=f'TEFF_CUT_g={TEFF_CUT_g}\n'
-#if  TEFF_CUT_i != (None):
-#    data[40]=f'TEFF_CUT_i={TEFF_CUT_i}\n'
-#if  TEFF_CUT_r != (None):
-#    data[41]=f'TEFF_CUT_r={TEFF_CUT_r}\n'
-#if  TEFF_CUT_Y != (None):
-#    data[42]=f'TEFF_CUT_Y={TEFF_CUT_Y}\n'
-#if  TEFF_CUT_z != (None):
-#    data[43]=f'TEFF_CUT_z={TEFF_CUT_z}\n'
-#if  TEFF_CUT_u != (None):
-#    data[44]=f'TEFF_CUT_u={TEFF_CUT_u}\n'
+if  TEFF_CUT_g != (None):
+    data[39]='TEFF_CUT_g='+TEFF_CUT_g+'\\n'
+    print(data[39])
+if  TEFF_CUT_i != (None):
+    data[40]='TEFF_CUT_i='+TEFF_CUT_i+'\\n'
+    print(data[40])
+if  TEFF_CUT_r != (None):
+    data[41]='TEFF_CUT_r='+TEFF_CUT_r+'\\n'
+    print(data[41])
+if  TEFF_CUT_Y != (None):
+    data[42]='TEFF_CUT_Y='+TEFF_CUT_Y+'\\n'
+    print(data[42])
+if  TEFF_CUT_z != (None):
+    data[43]='TEFF_CUT_z='+TEFF_CUT_z+'\\n'
+    print(data[43])
+if  TEFF_CUT_u != (None):
+    data[44]='TEFF_CUT_u='+TEFF_CUT_u+'\\n'
+    print(data[44])
 
 with open(filepath, 'w') as file:
      file.writelines( data )
@@ -391,7 +405,7 @@ if output == 0:
 else:
     raise ValueError('Something went wrong with setup_img_proc.sh. Please manually run or try again.')
 
-inputted_exp_list = (raw_input("Please input the filepath to your exp.list file"))
+inputted_exp_list = (raw_input("Please input the filepath to your exp.list file: "))
 
 # filepath = 'exposures_jul27.list'
 filepath = inputted_exp_list
@@ -465,8 +479,33 @@ outputdir = Path('./image_proc_outputs/')
 # Make the output dir if it doesn't exist
 outputdir.mkdir(exist_ok=True)
 
+nite = nite[0]
 
-with open(str(outputdir/'outputs.txt'), 'a') as file:
-    file.write(exp_info + '\\n' + nite + '\\n' + SEASON + '\\n')
-    file.close()
+list_info = [str(exp_info), str(nite), str(SEASON)]
+
+
+output_dir_exists = os.path.exists('./image_proc_outputs/')
+if output_dir_exists:
+    file_exists = os.path.exists('./image_proc_outputs/output')
+    if file_exists:
+        with open('./image_proc_outputs/output', 'w') as file:
+            for item in list_info:
+                file.write("%s\n" % item)
+      
+                
+            file.close
+    else:
+ 
+        f = open('./image_proc_outputs/output', 'a')
+        f.write(str(exp_info + '\\n' + nite + '\\n' + SEASON + '\\n'))
+        f.close()
+        
+else:
+    os.mkdir('./image_proc_outputs/')
+    f = open('./image_proc_outputs/output', 'a')
+    for item in list_info:
+                f.write("%s\n" % item)
+      
+                
+    f.close
 #exp_info is your list with (exp_num band, exp_num band), other_info is the nite and other info that i will get from dagmaker upon combining codes
