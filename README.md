@@ -3,6 +3,26 @@
 ## Introduction to this automation:
 Our codes work with user input to, theoretically, automate the DESGW pipeline (the image processing and post processing steps). The goal of this automation is to reduce user input and streamline observation response. Some user input is required for the automation, which will be specified along with each step.
 ## Image Processing Code Explanation:
+### IMPORTANT NOTES
+As of now, the image processing code should be run in gw_workflow due to ongoing path issues. You should follow these steps to make sure it runs properly:
+
+1. Copy full_image_proc_gwworkflow.py to your gw_workflow folder
+2. Run your proxy
+2. Run
+
+    ```
+    conda activate des18a
+    ```
+3. Run
+
+    ```            
+    PYTHONPATH=${PYTHONPATH}:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/pycurl/v7_16_4/Linux64bit-2-6-2-12/pycurl
+    ```
+4. Run
+
+    ```
+    python f
+    ```
 ### Updating dagmaker.rc
 Dagmaker.rc is a config file that sets the parameters necessary for later creating a dag with dagmaker.sh. This section explains how the image processing code searches for these input parameters from the user in order to update the config file. 
 
