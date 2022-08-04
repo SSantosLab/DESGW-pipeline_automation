@@ -56,7 +56,7 @@ except:
     print('no .txt file, must input\n')
     exposures = [str(item) for item in input("Enter each exposure followed by band, separate with commas (ex. '938524 i, 938511 i, 938522 i'): ").split(',')]
     nite = input('Nite: ')
-    dpSeason = input('Season: ')
+    season = input('Season: ')
 
 
 
