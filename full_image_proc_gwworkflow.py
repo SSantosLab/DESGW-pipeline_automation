@@ -462,12 +462,12 @@ if __name__ == '__main__':
 
     main()
     
-data = []
+
 with open('exposures.list') as f:
-    lines = f.readlines()
-    for exp in exp_set:
-        for line in lines:
-            if str(exp) in line:
+    data = []
+    for line in f: 
+        for exp in exp_set:
+            if exp in line:
                 data.append(line)
 
 exp_info = []
