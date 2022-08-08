@@ -15,11 +15,6 @@ As of now, the image processing code should be run in gw_workflow due to ongoing
     ```
 3. Run
 
-    ```            
-    PYTHONPATH=${PYTHONPATH}:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/pycurl/v7_16_4/Linux64bit-2-6-2-12/pycurl
-    ```
-4. Run
-
     ```
     python full_image_proc_gwworkflow.py 
     ```
