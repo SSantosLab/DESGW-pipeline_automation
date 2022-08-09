@@ -45,17 +45,18 @@ try:
     exposures = exposures[1:-1]
     exposures = list(exposures.split(","))
 
-    nite = lines[1].strip()
-    season = lines[2].strip()
+    season = lines[1].strip()
 
     print('Season: ' + season)
-    print('Nite: ' + nite)
     print('Exposures: ' + str(exposures))
     
 except:
     print('no .txt file, must input\n')
     exposures = [str(item) for item in input("Enter each exposure followed by band, separate with commas (ex. '938524 i, 938511 i, 938522 i'): ").split(',')]
+<<<<<<< HEAD
+=======
     nite = input('Nite: ')
+>>>>>>> b73aa25afca57c5d0ab44a842bccddf055436a14
     season = input('Season: ')
 
 
@@ -85,7 +86,7 @@ for exposure in exposures:
     term_size = os.get_terminal_size()
     print('=' * term_size.columns)
     print("\nFOR EXPOSURE " + str(exposure) + ":\n")
-    exposure_dir = dir_prefix + nite + '/' + exposure +'/' + dpSeason + band
+    exposure_dir = dir_prefix + '*' + '/' + exposure +'/' + dpSeason + band
     band_dirs = glob.glob(exposure_dir + '_*' + '/') #what we're counting to make sure they're all there
     print('There are '+ str(len(band_dirs)) + ' ' + str(band) + ' ccds\n')
 
@@ -124,7 +125,7 @@ for exposure in exposures:
 
     forcephoto_dir_prefix = '/pnfs/des/persistent/gw/forcephoto/images/'
 
-    forcephoto_dir = forcephoto_dir_prefix + dpSeason + nite + '/' + exposure
+    forcephoto_dir = forcephoto_dir_prefix + dpSeason + '*' + '/' + exposure + '/'
     forcephoto_files = glob.glob(forcephoto_dir + '/' + '*' + '_' + str(band) + '_' + '*')
     print('found forcephoto files for exposure '+  str(exposure) + ': ' + str(len(forcephoto_files)) + '\n')
     if len(forcephoto_files) == expected_forcephoto_files: 
