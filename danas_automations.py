@@ -53,6 +53,10 @@ try:
 except:
     print('no .txt file, must input\n')
     exposures = [str(item) for item in input("Enter each exposure followed by band, separate with commas (ex. '938524 i, 938511 i, 938522 i'): ").split(',')]
+<<<<<<< HEAD
+=======
+    nite = input('Nite: ')
+>>>>>>> b73aa25afca57c5d0ab44a842bccddf055436a14
     season = input('Season: ')
 
 

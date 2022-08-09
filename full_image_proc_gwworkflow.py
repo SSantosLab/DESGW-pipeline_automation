@@ -15,35 +15,15 @@ from multiprocessing import Pool,Process, Queue, current_process, Semaphore
 import time
 import queue
 import csv
+#from pathlib import Path
 
-
-
-#check if gw_workflow folder exists. if it doesnt, clone it from github
-filepath = ['../gw_workflow']
-isExist = os.path.exists(filepath[0])
-if isExist:
-    gw_path = '../gw_workflow'
-else:
-    git_command = ['git clone https://github.com/SSantosLab/gw_workflow.git ../gw_workflow' ]
-    git_output = os.system(git_command[0])
-    #check if the system command will run successfully. if it does, output will be 0 with os.system. if it doesn't, raise exception. if you got this error, try manually git cloning https://github.com/SSantosLab/gw_workflow.git one folder back in a folder called gw_workflow
-    if output == 0:
-        os.system(command_source[0])
-    else:
-        raise ValueError('Something went wrong with cloning gw_workflow. Please manually run or try again.')
-        
-gw_path = '../gw_workflow'
-
-    
-        
-
-test_check = (raw_input("Would you like to update dagmaker.rc? [y/n]"))
+test_check = (raw_input("Would you like to update dagmaker.rc? [y/n]: "))
 test = test_check
 if test == ('n'):
 #         #des gw testing suite and season number 
     SEASON = 2206
     
-elif test == ('y'):
+elif test == ('n'):
     #query the system so that we can tell what seasons are used
     query = """select distinct season from MARCELLE.SNAUTOSCAN union select distinct season from MARCELLE.SNAUTOSCAN_SAVE union select distinct season from MARCELLE.SNCAND union select distinct season from MARCELLE.SNFAKEIMG union select distinct season from MARCELLE.SNFAKEMATCH union select distinct season from MARCELLE.SNFORCE union select distinct season from MARCELLE.SNOBS union select distinct season from MARCELLE.SNOBSINFO union select distinct season from MARCELLE.SNOBS_SAVE union select distinct season from MARCELLE.SNSCAN ;""" 
 
@@ -85,7 +65,7 @@ elif test == ('y'):
             i = 0
         
         elif int(SEASON) in used_seasons:                         
-            answer = (raw_input("Input matches previously used value. Proceeding with this Season input will overwrite previous files. Would you like to keep this input and overwrite previous files? [y/n]:"))
+            answer = (raw_input("Input matches previously used value. Proceeding with this Season input will overwrite previous files. Would you like to keep this input and overwrite previous files? [y/n]: "))
             answer_input = answer
             
             if answer_input == ('y'):
@@ -117,9 +97,9 @@ elif test == ('y'):
             raise ERROR("Something's gone wrong. Please restart and input a new season number.")
             
 else:
-    raise Exception('Please restart and enter y/n')
+    raise Exception('Please restart and enter [y/n]. ')
     
-update_other_stuff = (raw_input("Would you like to update any other parameters? If you know something you'd like to update, type it here. Enter 'n' for no. For syntax/a list of possible updates, type 'help'."))
+update_other_stuff = (raw_input("Would you like to update any other parameters? If you know something you'd like to update, type it here. Enter 'n' for no. For syntax/a list of possible updates, type 'help'." ))
 update = update_other_stuff 
 
 JOBSUBS_OPTS = None
@@ -143,14 +123,14 @@ TEFF_CUT_u= None
 list_parameters = [TEFF_CUT_g, TEFF_CUT_i, TEFF_CUT_r, TEFF_CUT_Y, TEFF_CUT_z, TEFF_CUT_u, JOBSUBS_OPTS, RM_MYTEMP, JOBSUBS_OPTS_SE, RESOURCES, IGNORECALIB, DESTCACHE, TWINDOW, MIN_NITE, MAX_NITE, SKIP_INCOMPLETE_SE, DO_HEADER_CHECK]
 
 def update_parameter(parameter):
-    new_parameter_input = (raw_input("What would you like to update to?")) 
+    new_parameter_input = (input("What would you like to update to? ")) 
     new_parameter = new_parameter_input
     return new_parameter
 
 
     
 def ask_restart():
-    restart_or_no = (raw_input('Would you like to update parameters? [y/n/help]'))
+    restart_or_no = (raw_input('Would you like to update parameters? [y/n/help] '))
     answer_restart = restart_or_no
     if restart_or_no == ('y'):
         update_more = (raw_input("Would you like to update any other parameters? If you know something you'd like to update, type it here. For syntax/a list of possible updates, type 'help'."))
@@ -285,7 +265,7 @@ while i < 1:
         i = new_values_error['i']
         i=1
         
-filepath = gw_path + '/dagmaker.rc'
+filepath = 'dagmaker.rc'
 
 with open(filepath, 'r') as file:
     # read a list of lines into data
@@ -297,7 +277,6 @@ season_temp = str(SEASON)
 data[18]='SEASON='+season_temp+'\n'
 print('Printing your updates:')
 print (data[18])
-
 
 if  RM_MYTEMP != (None):
     data[23]='RM_MYTEMP='+RM_MYTEMP+'\\n'
@@ -372,9 +351,9 @@ def run_dagsh(exps_to_run, finished_exps, exp_set):
           
             #initialize command
             
-            command = ['cd '+gw_path; ' ./DAGMaker.sh ' + exp_set[current_exp]]
+            command = [' ./DAGMaker.sh ' + exp_set[current_exp]]
             
-            #process for each command ask nora about this
+            #process for each command 
             print("Running " + command[0])
             process = subprocess.Popen(command, bufsize=1, shell=True, universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             stdout, stderr = process.communicate()
@@ -383,19 +362,21 @@ def run_dagsh(exps_to_run, finished_exps, exp_set):
             if stderr != None:
                 f.write(stderr)
             f.close()
-            #print so it knows its running mostly for testing
+            #print so it knows its running 
             print("All done with " + command[0])
             
+            cwd = os.getcwd()
             new_command = ['jobsub_submit_dag -G des --role=DESGW file://desgw_pipeline_' + exp_set[current_exp] + '.dag']
 #             new_command = ['/cvmfs/fermilab.opensciencegrid.org/products/common/prd/jobsub_client/v1_3/NULL/jobsub_submit_dag -G des --role=DESGW file://desgw_pipeline_' + exp_set[current_exp] + '.dag']
 
             
-            filepath = [gw_path + '/desgw_pipeline_' + exp_set[current_exp] + '.dag']
+            filepath = ['desgw_pipeline_' + exp_set[current_exp] + '.dag']
             isExist = os.path.exists(filepath[0])
     
             if isExist:
-                path = '../gw_workflow/jobsub_submit_dag'
-                new_command = [path + ' -G des --role=DESGW file:/' + gw_path + '/desgw_pipeline_' + exp_set[current_exp] + '.dag']
+                path = '/cvmfs/fermilab.opensciencegrid.org/products/common/prd/jobsub_client/v1_3/NULL/jobsub_submit_dag'
+#                 path = 'jobsub_submit_dag'
+                new_command = [path + ' -G des --role=DESGW file://desgw_pipeline_' + exp_set[current_exp] + '.dag']
                 print("Running" + new_command[0])
                 os.system(new_command[0])
                 print("Finished with" + new_command[0])
@@ -417,7 +398,7 @@ def run_dagsh(exps_to_run, finished_exps, exp_set):
 
 #source setup img proc, necessary for dagmaker
 cwd = os.getcwd()
-command_source = ['source '+gw_path+'/setup_img_proc.sh']
+command_source = ['source '+cwd+'/setup_img_proc.sh']
 
 #ensure that source setup_diff_img will run by checking if there's a system error raised. 
 output = os.system(command_source[0])
@@ -426,7 +407,7 @@ if output == 0:
 else:
     raise ValueError('Something went wrong with setup_img_proc.sh. Please manually run or try again.')
 
-inputted_exp_list = (raw_input("Please input the full filepath to your exp.list file: "))
+inputted_exp_list = (raw_input("Please input the filepath to your exp.list file: "))
 
 # filepath = 'exposures_jul27.list'
 filepath = inputted_exp_list
@@ -476,16 +457,17 @@ else:
     print(output)
     raise ValueError('Something went wrong with sourcing. Please manually run or try again.')
     
+    
 if __name__ == '__main__':
 
     main()
     
-data = []
+
 with open('exposures.list') as f:
-    lines = f.readlines()
-    for exp in exp_set:
-        for line in lines:
-            if str(exp) in line:
+    data = []
+    for line in f: 
+        for exp in exp_set:
+            if exp in line:
                 data.append(line)
 
 exp_info = []
@@ -494,21 +476,38 @@ nite = []
 for line in data:
     data_extracted = line.split()
     exp_info.append(data_extracted[0] + ' ' + data_extracted[5])
-    nite.append('nite:' + data_extracted[1])
+    nite.append(data_extracted[1])
 
-output_check = os.path.exists('./image_proc_outputs')
-if output_check:
-    print('woo')
+# Make the output dir if it doesn't exist
+
+
+nite = nite[0]
+
+list_info = [str(exp_info), str(nite), str(SEASON)]
+
+
+output_dir_exists = os.path.exists('./image_proc_outputs/')
+if output_dir_exists:
+    file_exists = os.path.exists('./image_proc_outputs/output.txt')
+    if file_exists:
+        with open('./image_proc_outputs/output.txt', 'w') as file:
+            for item in list_info:
+                file.write("%s\n" % item)
+      
+                
+            file.close
+    else:
+ 
+        f = open('./image_proc_outputs/output.txt', 'a')
+        f.write(str(exp_info + '\\n' + nite + '\\n' + SEASON + '\\n'))
+        f.close()
+        
 else:
-    os.mkdir('./image_proc_outputs')
-    
-outputdir = './image_proc_outputs/'
-
-
-
-output_path = str(outputdir/'outputs.txt')
-
-with open(str(outputdir/'outputs.txt'), 'a') as file:
-    file.write(exp_info + '\\n' + nite + '\\n' + SEASON + '\\n')
-    file.close()
+    os.mkdir('./image_proc_outputs/')
+    f = open('./image_proc_outputs/output.txt', 'a')
+    for item in list_info:
+                f.write("%s\n" % item)
+      
+                
+    f.close
 #exp_info is your list with (exp_num band, exp_num band), other_info is the nite and other info that i will get from dagmaker upon combining codes

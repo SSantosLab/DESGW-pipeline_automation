@@ -3,6 +3,22 @@
 ## Introduction to this automation:
 Our codes work with user input to, theoretically, automate the DESGW pipeline (the image processing and post processing steps). The goal of this automation is to reduce user input and streamline observation response. Some user input is required for the automation, which will be specified along with each step.
 ## Image Processing Code Explanation:
+### IMPORTANT NOTES
+As of now, the image processing code should be run in gw_workflow due to ongoing path issues. You should follow these steps to make sure it runs properly:
+
+1. Copy full_image_proc_gwworkflow.py to your gw_workflow folder
+2. Run your proxy
+2. Run
+
+    ```
+    conda activate des18a
+    ```
+3. Run
+
+    ```
+    python full_image_proc_gwworkflow.py 
+    ```
+
 ### Updating dagmaker.rc
 Dagmaker.rc is a config file that sets the parameters necessary for later creating a dag with dagmaker.sh. This section explains how the image processing code searches for these input parameters from the user in order to update the config file. 
 
@@ -23,6 +39,8 @@ The code works by creating a queue object of all of the exposures within the .li
 
 ### Output
 After the previous steps, the code looks in the exposures.list file contained within gw_workflow for information necessary for post-processing. It outputs a list, containing each exposure with its respective band in the format [expnum band, expnum band, expnum band]. It also passes on the NITE and SEASON to post-processing. 
+
+These will be placed in a file located in image_proc_outputs called output.txt. The first line of this .txt is the exp_list, the second line is NITE, and the third line is SEASON. 
 
 ## Post Processing Code Explanation:
 Once Image Processing has completed running, the post processing automation retreives the exposures and their bands in the format above, along with the nite and season from the output file. 
