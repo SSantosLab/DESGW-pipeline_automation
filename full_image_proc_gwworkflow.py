@@ -23,11 +23,13 @@ if test == ('n'):
 #         #des gw testing suite and season number 
     SEASON = 2206
     
-elif test == ('n'):
+elif test == ('y'):
     #query the system so that we can tell what seasons are used
     query = """select distinct season from MARCELLE.SNAUTOSCAN union select distinct season from MARCELLE.SNAUTOSCAN_SAVE union select distinct season from MARCELLE.SNCAND union select distinct season from MARCELLE.SNFAKEIMG union select distinct season from MARCELLE.SNFAKEMATCH union select distinct season from MARCELLE.SNFORCE union select distinct season from MARCELLE.SNOBS union select distinct season from MARCELLE.SNOBSINFO union select distinct season from MARCELLE.SNOBS_SAVE union select distinct season from MARCELLE.SNSCAN ;""" 
-
+    
+    print('Querying the database for used season numbers...')
     DF=ea.connect('dessci').query_to_pandas(query)
+    print('Query complete.')
     
     seasons = DF['SEASON']
     used_seasons = []
@@ -46,7 +48,7 @@ elif test == ('n'):
     used_seasons.append(integer_value)
 
     #save the event data along with the season number 
-    inputted_season = (input("Enter desired season. If you have no input in mind, enter 'random':"))
+    inputted_season = (raw_input("Enter desired season. If you have no input in mind, enter 'random': "))
     if inputted_season.isdigit():
         SEASON = int(inputted_season)
     elif inputted_season == ('random'):
@@ -69,7 +71,7 @@ elif test == ('n'):
             answer_input = answer
             
             if answer_input == ('y'):
-                answer_input_2 = (raw_input("Are you SURE you want to overwrite previous values and continue with this number? [y/n]:"))
+                answer_input_2 = (raw_input("Are you SURE you want to overwrite previous values and continue with this number? [y/n]: "))
                 answer_2 = answer_input_2
                 if answer_2 == ('y'):
                     new_season = (raw_input("YOU CAn'T OVERWRITE pRevIouS FILeS!!!! Pick a new number."))
@@ -83,7 +85,7 @@ elif test == ('n'):
                     SEASON = new_value
                     i = 0        
             elif answer_input != ('n'):  
-                raise Exception('You gotta enter y or n or the code will break for now')
+                raise Exception('You gotta enter y or n or the code will break for now.')
             else:
                 new_input = raw_input("Please enter a new value for SEASON:")
                 SEASON = new_input
@@ -99,8 +101,10 @@ elif test == ('n'):
 else:
     raise Exception('Please restart and enter [y/n]. ')
     
-update_other_stuff = (raw_input("Would you like to update any other parameters? If you know something you'd like to update, type it here. Enter 'n' for no. For syntax/a list of possible updates, type 'help'." ))
+update_other_stuff = (raw_input("Would you like to update any other parameters? If you know something you'd like to update, type it here. Enter 'n' for no. For syntax/a list of possible updates, type 'help': " ))
 update = update_other_stuff 
+
+
 
 JOBSUBS_OPTS = None
 RM_MYTEMP = None
@@ -120,35 +124,51 @@ TEFF_CUT_r= None
 TEFF_CUT_Y= None
 TEFF_CUT_z= None
 TEFF_CUT_u= None
-list_parameters = [TEFF_CUT_g, TEFF_CUT_i, TEFF_CUT_r, TEFF_CUT_Y, TEFF_CUT_z, TEFF_CUT_u, JOBSUBS_OPTS, RM_MYTEMP, JOBSUBS_OPTS_SE, RESOURCES, IGNORECALIB, DESTCACHE, TWINDOW, MIN_NITE, MAX_NITE, SKIP_INCOMPLETE_SE, DO_HEADER_CHECK]
+# WRITE_DB= None
+WRITEDB= None
+list_parameters = [WRITE_DB, TEFF_CUT_g, TEFF_CUT_i, TEFF_CUT_r, TEFF_CUT_Y, TEFF_CUT_z, TEFF_CUT_u, JOBSUBS_OPTS, RM_MYTEMP, JOBSUBS_OPTS_SE, RESOURCES, IGNORECALIB, DESTCACHE, TWINDOW, MIN_NITE, MAX_NITE, SKIP_INCOMPLETE_SE, DO_HEADER_CHECK]
 
 def update_parameter(parameter):
-    new_parameter_input = (input("What would you like to update to? ")) 
-    new_parameter = new_parameter_input
+    new_parameter_input = (raw_input("What would you like to update to? ")) 
+    new_parameter = str(new_parameter_input)
     return new_parameter
 
 
     
 def ask_restart():
-    restart_or_no = (raw_input('Would you like to update parameters? [y/n/help] '))
-    answer_restart = restart_or_no
-    if restart_or_no == ('y'):
-        update_more = (raw_input("Would you like to update any other parameters? If you know something you'd like to update, type it here. For syntax/a list of possible updates, type 'help'."))
-        update_value = update_more
-        i = 0
-    elif restart_or_no == ('n'):
-        update_value = None
-        i = 1
-        
+    j = 0
+    while j == 0:
+        restart_or_no = (raw_input('Would you like to update parameters? [y/n/help] '))
+        answer_restart = restart_or_no
+        if restart_or_no == ('y'):
+            update_more = (raw_input("If you know what parameter you'd like to update, type it here. For syntax/a list of possible updates, type 'help': "))
+            update_value = update_more
+            i = 0
+            j = 1
+        elif restart_or_no == ('n'):
+            update_value = None
+            i = 1
+            j = 1
+        elif restart_or_no == ('help'):
+            update_value = 'help'
+            i = 0
+            j = 1
+        else:
+            print('Error. Please ensure you answer [y/n] when asked if you want to update values.')
+            j = 0
+            
     return {'i': i, 'update_value': update_value}
   
   
+update_other_stuff = (raw_input("Would you like to update any other parameters? If you know something you'd like to update, type it here. Enter 'n' for no. For syntax/a list of possible updates, type 'help'." ))
+update = update_other_stuff 
+
 i = 0
 while i < 1:
     
     if update == ('help'):
         
-        print("RM_MYTEMP, JOBSUBS_OPTS, JOBSUBS_OPTS_SE, RESOURCES, IGNORECALIB, DESTCACHE, TEFF_CUT, TWINDOW, MIN_NITE, MAX_NITE, SKIP_INCOMPLETE_SE, DO_HEADER_CHECK")
+        print("RM_MYTEMP, JOBSUBS_OPTS, JOBSUBS_OPTS_SE, RESOURCES, IGNORECALIB, DESTCACHE, TEFF_CUT_g, TEFF_CUT_i, TEFF_CUT_r, TEFF_CUT_Y, TEFF_CUT_z, TEFF_CUT_u, TWINDOW, MIN_NITE, MAX_NITE, SKIP_INCOMPLETE_SE, DO_HEADER_CHECK, WRITEDB")
         i_new = ask_restart()
         update = i_new['update_value']
         i = i_new['i']
@@ -159,14 +179,14 @@ while i < 1:
         update = new_values_rm['update_value']
         i = new_values_rm['i']
         
-    elif (update == 'JOBSUB_OPTS'):
-        JOBSUB_OPTS = update_parameter(JOBSUB_OPTS)
+    elif (update == 'JOBSUBS_OPTS'):
+        JOBSUBS_OPTS = update_parameter(JOBSUBS_OPTS)
         new_values_jo = ask_restart()
         update = new_values_jo['update_value']
         i = new_values_jo['i']
         
     elif (update == 'JOBSUBS_OPTS_SE'):
-        JOBSUB_OPTS_SE = update_parameter(JOBSUB_OPTS_SE)
+        JOBSUBS_OPTS_SE = update_parameter(JOBSUBS_OPTS_SE)
         new_values_jos = ask_restart()
         update = new_values_jos['update_value']
         i = new_values_jos['i']
@@ -255,6 +275,12 @@ while i < 1:
         update = new_values_header['update_value']
         i = new_values_header['i']
         
+    elif (update == 'WRITEDB'):
+        WRITEDB = update_parameter(WRITEDB)
+        new_values_db = ask_restart()
+        update = new_values_db['update_value']
+        i = new_values_db['i']
+        
     elif update == ('n'):
         i=1
         
@@ -266,9 +292,15 @@ while i < 1:
         i=1
         
 filepath = 'dagmaker.rc'
-
+# with open(filepath, 'r') as fp:
+#     line = fp.readline()
+#     cnt = 1
+#     while line:
+#          print("Line {}: {}".format(cnt, line.strip()))
+#          line = fp.readline()
+#          cnt += 1
+            
 with open(filepath, 'r') as file:
-    # read a list of lines into data
     data = file.readlines()
 
 
@@ -279,50 +311,53 @@ print('Printing your updates:')
 print (data[18])
 
 if  RM_MYTEMP != (None):
-    data[23]='RM_MYTEMP='+RM_MYTEMP+'\\n'
+    data[23]='RM_MYTEMP='+RM_MYTEMP+'\n'
     print(data[23])
 if  JOBSUBS_OPTS != (None):
-    data[25]='JOBSUB_OPTS='+JOBSUB_OPTS+'\\n'
+    data[25]='JOBSUBS_OPTS='+JOBSUBS_OPTS+'\n'
     print(data[25])
 if  JOBSUBS_OPTS_SE != (None):
-    data[26]='JOBSUB_OPTS_SE='+JOBSUB_OPTS_SE+'\\n'
+    data[26]='JOBSUBS_OPTS_SE='+JOBSUBS_OPTS_SE+'\n'
     print(data[26])
+if  WRITEDB != (None):
+    data[20]='WRITEDB='+WRITEDB+'\n'
+    print(data[20])
 if  RESOURCES != (None):
-    data[28]='RESOURCES='+RESOURCES+'\\n'
+    data[28]='RESOURCES='+RESOURCES+'\n'
     print(data[28])
 if  IGNORECALIB != (None):
-    data[29]='IGNORECALIB='+IGNORECALIB+'\\n'
+    data[29]='IGNORECALIB='+IGNORECALIB+'\n'
     print(data[29])
 if  DESTCACHE != (None):
-    data[30]='DESTCACHE='+DESTCACHE+'\\n'
+    data[30]='DESTCACHE='+DESTCACHE+'\n'
     print(data[30])
 if  TWINDOW != (None):
-    data[45]='TWINDOW='+TWINDOW+'\\n'
+    data[45]='TWINDOW='+TWINDOW+'\n'
     print(data[45])
 if  SKIP_INCOMPLETE_SE != (None):
-    data[57]='SKIP_INCOMPLETE_SE='+SKIP_INCOMPLETE_SE+'\\n'
+    data[57]='SKIP_INCOMPLETE_SE='+SKIP_INCOMPLETE_SE+'\n'
     print(data[57])
 if  DO_HEADER_CHECK != (None):
-    data[60]='DO_HEADER_CHECK='+DO_HEADER_CHECK+'\\n'
+    data[60]='DO_HEADER_CHECK='+DO_HEADER_CHECK+'\n'
     print(data[60])
     
 if  TEFF_CUT_g != (None):
-    data[39]='TEFF_CUT_g='+TEFF_CUT_g+'\\n'
+    data[39]='TEFF_CUT_g='+TEFF_CUT_g+'\n'
     print(data[39])
 if  TEFF_CUT_i != (None):
-    data[40]='TEFF_CUT_i='+TEFF_CUT_i+'\\n'
+    data[40]='TEFF_CUT_i='+TEFF_CUT_i+'\n'
     print(data[40])
 if  TEFF_CUT_r != (None):
-    data[41]='TEFF_CUT_r='+TEFF_CUT_r+'\\n'
+    data[41]='TEFF_CUT_r='+TEFF_CUT_r+'\n'
     print(data[41])
 if  TEFF_CUT_Y != (None):
-    data[42]='TEFF_CUT_Y='+TEFF_CUT_Y+'\\n'
+    data[42]='TEFF_CUT_Y='+TEFF_CUT_Y+'\n'
     print(data[42])
 if  TEFF_CUT_z != (None):
-    data[43]='TEFF_CUT_z='+TEFF_CUT_z+'\\n'
+    data[43]='TEFF_CUT_z='+TEFF_CUT_z+'\n'
     print(data[43])
 if  TEFF_CUT_u != (None):
-    data[44]='TEFF_CUT_u='+TEFF_CUT_u+'\\n'
+    data[44]='TEFF_CUT_u='+TEFF_CUT_u+'\n'
     print(data[44])
 
 with open(filepath, 'w') as file:
@@ -352,10 +387,11 @@ def run_dagsh(exps_to_run, finished_exps, exp_set):
             #initialize command
             
             command = [' ./DAGMaker.sh ' + exp_set[current_exp]]
+#             command = ['pwd']
             
             #process for each command 
             print("Running " + command[0])
-            process = subprocess.Popen(command, bufsize=1, shell=True, universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            process = subprocess.Popen(command[0], bufsize=1, shell=True, universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             stdout, stderr = process.communicate()
             f = open('dagmaker_'+exp_set[current_exp]+'.out', 'w')
             f.write(stdout)
@@ -370,24 +406,30 @@ def run_dagsh(exps_to_run, finished_exps, exp_set):
 #             new_command = ['/cvmfs/fermilab.opensciencegrid.org/products/common/prd/jobsub_client/v1_3/NULL/jobsub_submit_dag -G des --role=DESGW file://desgw_pipeline_' + exp_set[current_exp] + '.dag']
 
             
-            filepath = ['desgw_pipeline_' + exp_set[current_exp] + '.dag']
+            filepath = [cwd + 'desgw_pipeline_' + exp_set[current_exp] + '.dag']
             isExist = os.path.exists(filepath[0])
     
-            if isExist:
-                path = '/cvmfs/fermilab.opensciencegrid.org/products/common/prd/jobsub_client/v1_3/NULL/jobsub_submit_dag'
-#                 path = 'jobsub_submit_dag'
-                new_command = [path + ' -G des --role=DESGW file://desgw_pipeline_' + exp_set[current_exp] + '.dag']
-                print("Running" + new_command[0])
-                os.system(new_command[0])
-                print("Finished with" + new_command[0])
+            if not isExist:
+                
 #         subprocess.check_output(new_command[0], stderr=subprocess.STDOUT)
+                raise ValueError('Something went wrong with finding the desgw_pipeline.dag file for exposure'+exp_set[current_exp]+'.This may not cause issues, but if submitting the dag does not work, this is probably why.')
         
-            else:
-                raise ValueError('Something went wrong with finding the desgw_pipeline.dag file for exposure'+exp_set[current_exp]+'.Please manually run or try again.')
-        
-    
+            path = '/cvmfs/fermilab.opensciencegrid.org/products/common/prd/jobsub_client/v1_3/NULL/jobsub_submit_dag'
+#                 path = 'jobsub_submit_dag'
+#             new_command = [path + ' -G des --role=DESGW file://desgw_pipeline_' + exp_set[current_exp] + '.dag']
 
             print("Running" + new_command[0])
+#             os.system(new_command[0])
+            process = subprocess.Popen(new_command[0], bufsize=1, shell=True, universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            stdout, stderr = process.communicate()
+            f = open('dag_submission_'+exp_set[current_exp]+'.out', 'w')
+            f.write(stdout)
+            if stderr != None:
+                f.write(stderr)
+            f.close()
+            print("Finished with" + new_command[0])
+
+#             print("Running" + new_command[0])
 #             os.system(new_command[0])
             
             finished_exps.put(exp_set[current_exp] + ' is done by ' + current_process().name)
@@ -410,9 +452,18 @@ else:
 inputted_exp_list = (raw_input("Please input the filepath to your exp.list file: "))
 
 # filepath = 'exposures_jul27.list'
-filepath = inputted_exp_list
-sample_exp_set = EXPlist(filepath)
-number_exps = len(sample_exp_set)
+inputted_filepath = inputted_exp_list
+exp_path_exists = os.path.exists(inputted_filepath)
+
+if exp_path_exists: 
+    sample_exp_set = EXPlist(inputted_filepath)
+    number_exps = len(sample_exp_set)
+else: 
+    inputted_exp_list = (raw_input("Error; please make sure that file exists. Try re-entering it one more time: ")
+    inputted_filepath = inputted_exp_list
+    sample_exp_set = EXPlist(inputted_filepath)
+    number_exps = len(sample_exp_set)
+    
 
 #initializing information for the processing function arguments
 number_of_tasks = number_exps
@@ -458,6 +509,17 @@ else:
     raise ValueError('Something went wrong with sourcing. Please manually run or try again.')
     
     
+path_find_list = sys.path
+pycurl_path = '/cvmfs/fermilab.opensciencegrid.org/products/common/prd/pycurl/v7_16_4/Linux64bit-2-6-2-12/pycurl'
+if pycurl_path in path_find_list:
+    print('Found the path to pycurl.')
+if pycurl_path not in path_find_list:
+    print('Missing path to pycurl. Appending path now.')
+    sys.path.append('/cvmfs/fermilab.opensciencegrid.org/products/common/prd/pycurl/v7_16_4/Linux64bit-2-6-2-12/pycurl')
+
+
+
+
 if __name__ == '__main__':
 
     main()
@@ -481,9 +543,8 @@ for line in data:
 # Make the output dir if it doesn't exist
 
 
-nite = nite[0]
 
-list_info = [str(exp_info), str(nite), str(SEASON)]
+list_info = [str(exp_info), str(SEASON)]
 
 
 output_dir_exists = os.path.exists('./image_proc_outputs/')
@@ -499,7 +560,7 @@ if output_dir_exists:
     else:
  
         f = open('./image_proc_outputs/output.txt', 'a')
-        f.write(str(exp_info + '\\n' + nite + '\\n' + SEASON + '\\n'))
+        f.write(str(exp_info + '\n' + SEASON + '\n'))
         f.close()
         
 else:
