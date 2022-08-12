@@ -48,7 +48,6 @@ else:
     if git_output != 0:
         raise ValueError('Something went wrong with cloning Post-Processing. Please manually clone or try again.')
         
-os.chdir('../Post-Processing')
 
 
 # In[3]:
