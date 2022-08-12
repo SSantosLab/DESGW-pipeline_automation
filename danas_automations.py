@@ -38,7 +38,7 @@ from collections import Counter
 #If no file, input manually
 
 try:
-    img_proc_file = open("sampleoutput.txt")
+    img_proc_file = open("./image_proc_outputs/output.txt")
     lines = img_proc_file.readlines()
     
     if input('.txt file with exposures found. Would you like to use this file? (y/n): ') == ('y'):
@@ -184,11 +184,6 @@ with open(current_exposures, 'w') as f:
 
 
 #ask user for
-season = str(season)
-ligoid = 'GW170814'
-triggerid = 'G298048'
-propid = '2017B-0110'
-triggermjd = '57979.437'
 
 ligoid = input('ligoid (ex. GW170814): ')
 triggerid = input('triggerid (ex. G298048): ')
