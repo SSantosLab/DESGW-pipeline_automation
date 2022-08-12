@@ -38,7 +38,12 @@ test_check = (raw_input("Would you like to update season? [y/n]: "))
 test = test_check
 if test == ('n'):
 #         #des gw testing suite and season number 
-    SEASON = 2206
+    SEASON = 2208
+#     inputted_season = (raw_input("Do you want your season to be 2206 or 2208? Enter [2206] or [2208] only, please: "))
+#     if inputted_season.isdigit():
+#         SEASON = int(inputted_season)
+#     if SEASON != (2206 | 2208):
+#         print("Error: you didn't pick 2206 or 2208. System is setting it to 2206. If you need it to be 2208, please manually update dagmaker.rc.")
     
 elif test == ('y'):
     #query the system so that we can tell what seasons are used
@@ -179,6 +184,7 @@ def ask_restart():
   
 update_other_stuff = (raw_input("Would you like to update any other parameters? If you know something you'd like to update, type it here. Enter 'n' for no. For syntax/a list of possible updates, type 'help'." ))
 update = update_other_stuff 
+parameters_strings = ["RM_MYTEMP, JOBSUBS_OPTS, JOBSUBS_OPTS_SE, RESOURCES, IGNORECALIB, DESTCACHE, TEFF_CUT_g, TEFF_CUT_i, TEFF_CUT_r, TEFF_CUT_Y, TEFF_CUT_z, TEFF_CUT_u, TWINDOW, MIN_NITE, MAX_NITE, SKIP_INCOMPLETE_SE, DO_HEADER_CHECK, WRITEDB"]
 
 i = 0
 while i < 1:
@@ -191,6 +197,12 @@ while i < 1:
         i = i_new['i']
         
     elif update == ('RM_MYTEMP'):
+        RM_MYTEMP = update_parameter(RM_MYTEMP)
+        new_values_rm = ask_restart()
+        update = new_values_rm['update_value']
+        i = new_values_rm['i']
+        
+     elif update == ('DO_HEADER_CHECK'):
         RM_MYTEMP = update_parameter(RM_MYTEMP)
         new_values_rm = ask_restart()
         update = new_values_rm['update_value']
@@ -322,7 +334,8 @@ filepath = 'dagmaker.rc'
 with open(filepath, 'r') as file:
     data = file.readlines()
 
-
+# for line in data:
+#     for 
 # data[18]=f'SEASON={SEASON}\n'
 season_temp = str(SEASON)
 data[18]='SEASON='+season_temp+'\n'
