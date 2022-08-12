@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[133]:
+# In[1]:
 
 
 import os
@@ -14,9 +14,10 @@ import configparser
 import argparse
 import shutil
 import datetime
+from collections import Counter
 
 
-# In[134]:
+# In[2]:
 
 
 # Get a list of exposures
@@ -30,39 +31,40 @@ import datetime
 # Run post-processing pipeline
 
 
-# In[135]:
+# In[3]:
 
 
 #Read file outputted from image processing to get season, nite, exposure, band
 #If no file, input manually
 
 try:
-    print('Extracting season, nite, exposure, and band from sampeoutput.txt file\n')
-    img_proc_file = open("sampleoutput.txt")
+    img_proc_file = open("./image_proc_outputs/output.txt")
     lines = img_proc_file.readlines()
+    
+    if input('.txt file with exposures found. Would you like to use this file? (y/n): ') == ('y'):
+        print('\nExtracting season, exposure, and band from sampeoutput.txt file\n')
+        
+        exposures = lines[0].strip()
+        exposures = exposures[1:-1]
+        exposures = list(exposures.split(","))
 
-    exposures = lines[0].strip()
-    exposures = exposures[1:-1]
-    exposures = list(exposures.split(","))
+        season = lines[1].strip()
 
-    season = lines[1].strip()
-
-    print('Season: ' + season)
-    print('Exposures: ' + str(exposures))
+        print('Season: ' + season)
+        print('Exposures: ' + str(exposures))
+    
+    else:
+        exposures = [str(item) for item in input("Enter each exposure followed by band, separate with commas (ex. '938524 i, 938511 i, 938522 i'): ").split(',')]
+        season = input('Season: ')
+    
     
 except:
     print('no .txt file, must input\n')
     exposures = [str(item) for item in input("Enter each exposure followed by band, separate with commas (ex. '938524 i, 938511 i, 938522 i'): ").split(',')]
-<<<<<<< HEAD
-=======
-    nite = input('Nite: ')
->>>>>>> b73aa25afca57c5d0ab44a842bccddf055436a14
     season = input('Season: ')
 
 
-
-
-# In[136]:
+# In[12]:
 
 
 # Get exposure, format: /pnfs/des/persistent/gw/exp/NITE/EXPOSURE_NUMBER/dpSEASON/BAND_CCD
@@ -90,16 +92,26 @@ for exposure in exposures:
     band_dirs = glob.glob(exposure_dir + '_*' + '/') #what we're counting to make sure they're all there
     print('There are '+ str(len(band_dirs)) + ' ' + str(band) + ' ccds\n')
 
+    if glob.glob(dir_prefix + '*' + '/' + exposure +'/' + dpSeason + 'input_files'):
+        print('input_files found\n')
+    else:
+        print('input files not found\n')
     
     complete_ccds=0
     incomplete_ccds=0
     failed_ccds=0
     complete_ccds_list = []
+    fail_files = []
 
     for dir in band_dirs:
         if glob.glob(dir+'*.FAIL'):
-            print('ccd ' + dir[-5:-1] + ' failed')
+            fail_file = str(glob.glob(dir+'*.FAIL'))
+            fail_file = str(fail_file.split('/')[-1:])
+            fail_file = fail_file.strip('[]"')
+            print('ccd ' + dir[-5:-1] + ' failed on ' + fail_file)
             failed_ccds += 1
+            fail_files.append(fail_file)
+
         elif glob.glob(dir + 'outputs_*'):
             complete_ccds += 1
             complete_ccds_list.append(dir[-5:-1])
@@ -111,6 +123,8 @@ for exposure in exposures:
     print('There are ' + str(incomplete_ccds) + ' incomplete ' + str(band) + ' ccds')
     print('There are ' + str(complete_ccds) + ' complete '+ str(band) + ' ccds')
 
+    print('\n'+str(Counter(fail_files)))
+    
     if complete_ccds >= 50:
         print('\nover 50 ' + str(band) + ' ccds completed: acceptable')
         num_ccds = complete_ccds
@@ -150,7 +164,7 @@ for exposure in exposures:
 print('exposures moving to post processing:\n' + str(exposures_to_cont))
 
 
-# In[137]:
+# In[5]:
 
 
 #create custom exposure.list file
@@ -163,16 +177,14 @@ with open(current_exposures, 'w') as f:
         f.write("%s\n" % exposure)
 
 
-# In[143]:
+# In[6]:
 
 
 #create .ini file
 
-#move .ini file into Post-Processing
-
-season = str(season)
 
 #ask user for
+
 ligoid = input('ligoid (ex. GW170814): ')
 triggerid = input('triggerid (ex. G298048): ')
 propid = input('propid (ex. 2017B-0110): ')
@@ -196,6 +208,7 @@ general["propid"] = propid
 general["triggermjd"] = triggermjd
 general["exposures_listfile"] = exposures_listfile
 
+#editing bandslist
 bandslist = str(bandslist)
 bandslist = bandslist.strip("[]'")
 bandslist = bandslist.replace("'","")
@@ -207,7 +220,7 @@ with open(postproc_season_file, 'w') as configfile:
     edit.write(configfile)
 
 
-# In[144]:
+# In[ ]:
 
 
 #fetching directories from .ini file for SKIPTO
@@ -218,7 +231,7 @@ truthtable = edit["truthtable"]
 truthplusfile = truthtable['plusname']
 
 
-# In[145]:
+# In[ ]:
 
 
 #Check if we want to SKIPTO
@@ -242,7 +255,7 @@ else:
 print('\nContinuing to post processing')
 
 
-# In[146]:
+# In[ ]:
 
 
 #move .ini file and exposures list into Post-Processing
@@ -266,11 +279,11 @@ except NameError:
     print("\nRunning run_postproc.py\n")
     os.system('nohup python ./Post-Processing/run_postproc.py --outputdir outdir --season '+ str(season)+ ' &> postproc_run.out &')
 else:
-    print("\nRunning run_postproc.py\n")
+    print("\nRunning run_postproc.py with skip\n")
     os.system('nohup python ./Post-Processing/run_postproc.py --SKIPTO ' + str(SKIPTO_flag) + ' --outputdir outdir --season '+ str(season)+ ' &> postproc_run.out &')
 
 
-# In[142]:
+# In[ ]:
 
 
 #make cuts
