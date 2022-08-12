@@ -31,6 +31,26 @@ from collections import Counter
 # Run post-processing pipeline
 
 
+# In[ ]:
+
+
+#check if Post-Processing folder exists. If not, clone in from github
+
+filepath = ['../Post-Processing']
+isExist = os.path.exists(filepath[0])
+if isExist:
+    print('Post-Processing found')
+else:
+    git_command = ['git clone https://github.com/SSantosLab/Post-Processing.git ../Post-Processing' ]
+    print('Running'+git_command[0]+'in order to clone necessary folder post processing...')
+    git_output = os.system(git_command[0])
+    #check if the system command will run successfully. if it does, output will be 0 with os.system. if it doesn't, raise exception. if you got this error, try manually git cloning https://github.com/SSantosLab/gw_workflow.git one folder back in a folder called gw_workflow
+    if git_output != 0:
+        raise ValueError('Something went wrong with cloning Post-Processing. Please manually clone or try again.')
+        
+os.chdir('../Post-Processing')
+
+
 # In[3]:
 
 
@@ -236,14 +256,14 @@ truthplusfile = truthtable['plusname']
 
 #Check if we want to SKIPTO
 
-if glob.glob('./Post-Processing/'+ outdir[2:] + '/makedatafiles/LightCurvesReal/*.dat'):
+if glob.glob('../Post-Processing/'+ outdir[2:] + '/makedatafiles/LightCurvesReal/*.dat'):
     skip = input('It seems step 5 run_postproc has already been completed, would you like to skip to step 6? (y/n): ')
     if skip == ('y'):
         SKIPTO_flag = 6
         print('\nWill run post processing from step 6')
     else:
         print('\nWill run post processing from scratch')
-elif os.path.exists('./Post-Processing/' + outdir[2:] + '/truthtable'+str(season)+'/'+truthplusfile): #output from step 4
+elif os.path.exists('../Post-Processing/' + outdir[2:] + '/truthtable'+str(season)+'/'+truthplusfile): #output from step 4
     skip = input('\nIt seems step 4 run_postproc has already been completed, would you like to skip to step 5? (y/n): ')
     if skip == ('y'):
         SKIPTO_flag = 5
@@ -260,16 +280,16 @@ print('\nContinuing to post processing')
 
 #move .ini file and exposures list into Post-Processing
 
-os.system('mv ' + str(postproc_season_file) + ' ./Post-Processing')
-os.system('mv ' + str(current_exposures) + ' ./Post-Processing')
+os.system('mv ' + str(postproc_season_file) + ' ../Post-Processing')
+os.system('mv ' + str(current_exposures) + ' ../Post-Processing')
 
 #setup for Post Processing
-os.system('source ./Post-Processing/diffimg_setup.sh')
+os.system('source ../Post-Processing/diffimg_setup.sh')
 print('running diffimg_setup.sh\n')
 
 update_forcephoto_links = input('Are you running post processing for new exposures? (aka: run ./update_forcephoto_links.sh?) y/n: ')
 if update_forcephoto_links == ('y'):
-    os.system('./Post-Processing/update_forcephoto_links.sh')
+    os.system('../Post-Processing/update_forcephoto_links.sh')
     
 #run_postproc.py
 
@@ -277,10 +297,10 @@ try:
     SKIPTO_flag
 except NameError:
     print("\nRunning run_postproc.py\n")
-    os.system('nohup python ./Post-Processing/run_postproc.py --outputdir outdir --season '+ str(season)+ ' &> postproc_run.out &')
+    os.system('nohup python ../Post-Processing/run_postproc.py --outputdir outdir --season '+ str(season)+ ' &> postproc_run.out &')
 else:
     print("\nRunning run_postproc.py with skip\n")
-    os.system('nohup python ./Post-Processing/run_postproc.py --SKIPTO ' + str(SKIPTO_flag) + ' --outputdir outdir --season '+ str(season)+ ' &> postproc_run.out &')
+    os.system('nohup python ../Post-Processing/run_postproc.py --SKIPTO ' + str(SKIPTO_flag) + ' --outputdir outdir --season '+ str(season)+ ' &> postproc_run.out &')
 
 
 # In[ ]:
