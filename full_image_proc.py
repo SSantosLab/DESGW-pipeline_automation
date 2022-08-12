@@ -28,9 +28,7 @@ else:
     print('Running'+git_command[0]+'in order to clone necessary folder gw_workflow...')
     git_output = os.system(git_command[0])
     #check if the system command will run successfully. if it does, output will be 0 with os.system. if it doesn't, raise exception. if you got this error, try manually git cloning https://github.com/SSantosLab/gw_workflow.git one folder back in a folder called gw_workflow
-    if git_output == 0:
-        os.system(command_source[0])
-    else:
+    if git_output != 0:
         raise ValueError('Something went wrong with cloning gw_workflow. Please manually run or try again.')
         
 os.chdir('../gw_workflow')
