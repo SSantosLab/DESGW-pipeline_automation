@@ -123,8 +123,6 @@ elif test == ('y'):
 else:
     raise Exception('Please restart and enter [y/n]. ')
     
-update_other_stuff = (raw_input("Would you like to update any other parameters? If you know something you'd like to update, type it here. Enter 'n' for no. For syntax/a list of possible updates, type 'help': " ))
-update = update_other_stuff 
 
 
 
@@ -184,6 +182,7 @@ def ask_restart():
   
 update_other_stuff = (raw_input("Would you like to update any other parameters? If you know something you'd like to update, type it here. Enter 'n' for no. For syntax/a list of possible updates, type 'help'." ))
 update = update_other_stuff 
+
 parameters_strings = ["RM_MYTEMP, JOBSUBS_OPTS, JOBSUBS_OPTS_SE, RESOURCES, IGNORECALIB, DESTCACHE, TEFF_CUT_g, TEFF_CUT_i, TEFF_CUT_r, TEFF_CUT_Y, TEFF_CUT_z, TEFF_CUT_u, TWINDOW, MIN_NITE, MAX_NITE, SKIP_INCOMPLETE_SE, DO_HEADER_CHECK, WRITEDB"]
 
 i = 0
