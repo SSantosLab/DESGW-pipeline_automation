@@ -39,6 +39,7 @@ test = test_check
 if test == ('n'):
 #         #des gw testing suite and season number 
     SEASON = 2208
+    print('Double checking SEASON is set to 2208. If you need a different season, please restart or manually update dagmaker.rc before you enter your exposures.list file later in the code.')
 #     inputted_season = (raw_input("Do you want your season to be 2206 or 2208? Enter [2206] or [2208] only, please: "))
 #     if inputted_season.isdigit():
 #         SEASON = int(inputted_season)
@@ -199,13 +200,7 @@ while i < 1:
         RM_MYTEMP = update_parameter(RM_MYTEMP)
         new_values_rm = ask_restart()
         update = new_values_rm['update_value']
-        i = new_values_rm['i']
-        
-     elif update == ('DO_HEADER_CHECK'):
-        RM_MYTEMP = update_parameter(RM_MYTEMP)
-        new_values_rm = ask_restart()
-        update = new_values_rm['update_value']
-        i = new_values_rm['i']
+        i = new_values_rm['i']      
         
     elif (update == 'JOBSUBS_OPTS'):
         JOBSUBS_OPTS = update_parameter(JOBSUBS_OPTS)
