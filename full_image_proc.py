@@ -16,7 +16,15 @@ import time
 import queue
 import csv
 
+ask_test = raw_input('Is this a test run? [y/n]: ')
+answer_test = ask_test
+bench_criteria = 0
 
+if answer_test == 'y':
+    ask_bench = raw_input('Is this a benchmark test? [y/n]: ')
+    bench_answer = ask_bench
+    if bench_answer == 'y':
+        bench_criteria = 1
 
 #check if gw_workflow folder exists. if it doesnt, clone it from github
 filepath = ['../gw_workflow']
@@ -647,13 +655,27 @@ else:
     print(output)
     raise ValueError('Something went wrong with setup_img_proc.sh. Please manually run or try again.')
     
-inputted_exp_list = (raw_input("Please input the filepath to your exp.list file, relative to gw_workflow or as a full path: "))
+if bench_criteria:
+    print("We haven't made the benchmark test exp list yet. This is a placeholder.")
+    inputted_exp_list = (raw_input("Please input the filepath to your exp.list file, relative to gw_workflow or as a full path: "))
 
-isExist = os.path.exists(inputted_exp_list)
+    isExist = os.path.exists(inputted_exp_list)
     
 #         subprocess.check_output(new_command[0], stderr=subprocess.STDOUT)
         
-if not isExist:
+    if not isExist:
+        inputted_exp_list = (raw_input("Error, could not find your .list file. Please check location then input the filepath relative to gw_workflow one more time: "))
+
+
+else:
+    
+    inputted_exp_list = (raw_input("Please input the filepath to your exp.list file, relative to gw_workflow or as a full path: "))
+
+    isExist = os.path.exists(inputted_exp_list)
+    
+#         subprocess.check_output(new_command[0], stderr=subprocess.STDOUT)
+        
+    if not isExist:
         inputted_exp_list = (raw_input("Error, could not find your .list file. Please check location then input the filepath relative to gw_workflow one more time: "))
 
 # filepath = 'exposures_jul27.list'
