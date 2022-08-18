@@ -40,7 +40,7 @@ The code works by creating a queue object of all of the exposures within the .li
 ### Output
 After the previous steps, the code looks in the exposures.list file contained within gw_workflow for information necessary for post-processing. It outputs a list, containing each exposure with its respective band in the format [expnum band, expnum band, expnum band]. It also passes on the NITE and SEASON to post-processing. 
 
-These will be placed in a file located in image_proc_outputs called output.txt. The first line of this .txt is the exp_list, the second line is NITE, and the third line is SEASON. 
+These will be placed in a file located in image_proc_outputs called output.txt. The first line of this .txt is the exp_list and the second line is the SEASON.
 
 ## Post Processing Code Explanation:
 Once Image Processing has completed running, the post processing automation retreives the exposures and their bands in the format above, along with the nite and season from the output file. 
