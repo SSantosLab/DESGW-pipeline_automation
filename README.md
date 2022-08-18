@@ -4,10 +4,9 @@
 Our codes work with user input to, theoretically, automate the DESGW pipeline (the image processing and post processing steps). The goal of this automation is to reduce user input and streamline observation response. Some user input is required for the automation, which will be specified along with each step.
 ## Image Processing Code Explanation:
 ### IMPORTANT NOTES
-As of now, the image processing code should be run in gw_workflow due to ongoing path issues. You should follow these steps to make sure it runs properly:
+Before you begin, make sure you do the following:
 
-1. Copy full_image_proc_gwworkflow.py to your gw_workflow folder
-2. Run your proxy
+1. Run your proxy
 2. Run
 
     ```
@@ -18,6 +17,7 @@ As of now, the image processing code should be run in gw_workflow due to ongoing
     ```
     python full_image_proc_gwworkflow.py 
     ```
+The code must be run with des18a due to sourcing issues. It also should be run in python 2 due to some dependencies on other scripts written in 2. 
 
 ### Updating dagmaker.rc
 Dagmaker.rc is a config file that sets the parameters necessary for later creating a dag with dagmaker.sh. This section explains how the image processing code searches for these input parameters from the user in order to update the config file. 
