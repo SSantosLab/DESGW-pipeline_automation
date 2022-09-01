@@ -15,9 +15,12 @@ Before you begin, make sure you do the following:
 3. Run
 
     ```
-    python full_image_proc_gwworkflow.py 
+    python full_image_proc.py 
     ```
 The code must be run with des18a due to sourcing issues. It also should be run in python 2 due to some dependencies on other scripts written in 2. 
+
+### Test Pipeline (Incomplete)
+When you run the code, it will first ask you if the run is a test. This code is, as of now, incomplete, but eventually, it will automatically run the DESGW Testing Pipeline when prompted.
 
 ### Updating dagmaker.rc
 Dagmaker.rc is a config file that sets the parameters necessary for later creating a dag with dagmaker.sh. This section explains how the image processing code searches for these input parameters from the user in order to update the config file. 
@@ -73,4 +76,5 @@ It then runs run_postproc.py in the form of
     nohup python ./Post-Processing/run_postproc.py --outputdir outdir --season '+ str(season)+ ' &> postproc_run.out &'
 
 ## How to Use the Repo:
+
 
