@@ -689,6 +689,53 @@ number_of_tasks = number_exps
 number_of_processes = 5
 exp_set = sample_exp_set
 
+with open('exposures.list') as f:
+    data = []
+    for line in f: 
+        for exp in exp_set:
+            if exp in line:
+                data.append(line)
+
+exp_info = []
+nite = []
+
+for line in data:
+    data_extracted = line.split()
+    exp_info.append(data_extracted[0] + ' ' + data_extracted[5])
+    nite.append(data_extracted[1])
+
+# Make the output dir if it doesn't exist
+
+
+#creating output with information to be accessed by post processing
+list_info = [str(exp_info), str(SEASON)]
+
+
+output_dir_exists = os.path.exists('./image_proc_outputs/')
+if output_dir_exists:
+    file_exists = os.path.exists('./image_proc_outputs/output.txt')
+    if file_exists:
+        with open('./image_proc_outputs/output.txt', 'w') as file:
+            for item in list_info:
+                file.write("%s\n" % item)
+      
+                
+            file.close
+    else:
+ 
+        f = open('./image_proc_outputs/output.txt', 'a')
+        f.write(str(exp_info + '\n' + SEASON + '\n'))
+        f.close()
+        
+else:
+    os.mkdir('./image_proc_outputs/')
+    f = open('./image_proc_outputs/output.txt', 'a')
+    for item in list_info:
+                f.write("%s\n" % item)
+      
+                
+    f.close
+
 def main():
     
     #initialize queues so the system can recognize what's been done and what needs to be done 
@@ -746,52 +793,7 @@ if __name__ == '__main__':
 finish_time = str((time.time() - start_time_multiproc)/60)
 print('Finished with dag creation and submission. Multiprocessing took '+finish_time+' minutes.')
 
-with open('exposures.list') as f:
-    data = []
-    for line in f: 
-        for exp in exp_set:
-            if exp in line:
-                data.append(line)
 
-exp_info = []
-nite = []
-
-for line in data:
-    data_extracted = line.split()
-    exp_info.append(data_extracted[0] + ' ' + data_extracted[5])
-    nite.append(data_extracted[1])
-
-# Make the output dir if it doesn't exist
-
-
-
-list_info = [str(exp_info), str(SEASON)]
-
-
-output_dir_exists = os.path.exists('./image_proc_outputs/')
-if output_dir_exists:
-    file_exists = os.path.exists('./image_proc_outputs/output.txt')
-    if file_exists:
-        with open('./image_proc_outputs/output.txt', 'w') as file:
-            for item in list_info:
-                file.write("%s\n" % item)
-      
-                
-            file.close
-    else:
- 
-        f = open('./image_proc_outputs/output.txt', 'a')
-        f.write(str(exp_info + '\n' + SEASON + '\n'))
-        f.close()
-        
-else:
-    os.mkdir('./image_proc_outputs/')
-    f = open('./image_proc_outputs/output.txt', 'a')
-    for item in list_info:
-                f.write("%s\n" % item)
-      
-                
-    f.close
 #exp_info is your list with (exp_num band, exp_num band), other_info is the nite and other info that i will get from dagmaker upon combining codes
 
 print('Image processing completed.')
