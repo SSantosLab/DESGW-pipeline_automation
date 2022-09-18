@@ -15,6 +15,12 @@ from multiprocessing import Pool,Process, Queue, current_process, Semaphore
 import time
 import queue
 import csv
+from datetime import date
+import logging
+
+#create log file for debugging
+today = date.today()
+logging.basicConfig(filename=f'{today}_pipeline_automation.out', level=logging.DEBUG, format='%(asctime)s | %(name)s | %(levelname)s | %(message)s')
 
 #start by asking if its a test run to see if we will run the testing suite or the regular automation
 ask_test = input('Is this a test run? [y/n]: ')
@@ -22,12 +28,18 @@ answer_test = ask_test
 bench_criteria = 0
 test_criteria = 0
 
+env_var = os.environ
+
+logging.debug(f'Environment information this run:{dict(env_var)}')
+
 #determine if its a benchmark test, in which case some specific exposures will need to be pulled later
 if answer_test == 'y':
+    logging.info('This run is a test. It will use the Pipeline Testing Suite.')
     ask_bench = input('Is this a benchmark test? [y/n]: ')
     bench_answer = ask_bench
     if bench_answer == 'y':
         bench_criteria = 1
+        logging.info('This is a benchmark test.')
     if bench_answer == 'n':
         test_criteria = 1
 
@@ -38,11 +50,13 @@ if test_criteria == 1:
     if isExist:
         print('Pipeline testing suite found.')
     else:
+        logging.debug('Pipeline testing suite not found. Code is cloning it at ../DESGW-Pipeline-Testing-Suite')
         git_command = ['git clone https://github.com/SSantosLab/DESGW-Pipeline-Testing-Suite.git ../DESGW-Pipeline-Testing-Suite' ]
         print('Running '+git_command[0]+'in order to clone necessary folder DESGW-Pipeline-Testing-Suite...')
         git_output = os.system(git_command[0])
         #check if the system command will run successfully. if it does, output will be 0 with os.system. if it doesn't, raise exception. if you got this error, try manually git cloning https://github.com/SSantosLab/DESGW-Pipeline-Testing-Suite.git one folder back in a folder called gw_workflow
         if git_output != 0:
+            logging.debug('Something went wrong with finding and/or cloning DESGW-Pipeline-Testing-Suite. Code should stop running.')
             raise ValueError('Something went wrong with cloning DESGW-Pipeline-Testing-Suite. Please manually run or try again.')
     os.chdir('../DESGW-Pipeline-Testing-Suite')
     
@@ -58,6 +72,7 @@ if test_criteria == 1:
     f = open('configure_dagmaker_errors.out', 'w')
     f.write(stdout)
     if stderr != None:
+          logging.warning('Potential errors found while running configure_dag.py. For more information, see configure_dagmaker_errors.out file')
           f.write(stderr)
           error_dag = 1
     f.close()
@@ -66,6 +81,7 @@ if test_criteria == 1:
         continue_question = input('Warning: there was an error with configure_dag.py. Please check the configure_dagmaker_errors.out file for information, then decide if you would like to continue the testing pipeline by answering [y/n]: ')
         continue_answer = continue_question
         if continue_answer == 'n':
+            logging.debug('User terminated program due to errors with configure_dag.py.')
             print('Terminating this program.')
             sys.exit()
             
@@ -99,6 +115,7 @@ if test_criteria == 1:
     f.write(stdout)
     if stderr != None:
           f.write(stderr)
+          logging.warning('Potential errors found while running run_gw_workflow.py. For more information, see run_gw_workflow_errors.out file')
           error_gw = 1
     f.close()
     
@@ -107,6 +124,7 @@ if test_criteria == 1:
         continue_answer = continue_question
         if continue_answer == 'n':
             print('Terminating this program.')
+            logging.debug('User terminated program due to errors with run gw_workflow.py.')
             sys.exit()
             
     js_command = [f'python3 fetchJobSubStats.py --season {season} --exp_list {season}exposures.list']
@@ -122,10 +140,12 @@ if test_criteria == 1:
     f.close()
     
     if error_js == 1:
-        continue_question = input('Warning: there was an error with fetchJobSubStats.py. Please check the fetchJobSubStats_errors.out file for information, then decide if you would like to continue the testing pipeline by answering [y/n]: ')
-        continue_answer = continue_question
-        if continue_answer == 'n':
+        logging.warning('Potential errors found while running fetchJobSubStats.py. For more information, see fetchJobSubStats_errors.out file')
+        continue_question2 = input('Warning: there was an error with fetchJobSubStats.py. Please check the fetchJobSubStats_errors.out file for information, then decide if you would like to continue the testing pipeline by answering [y/n]: ')
+        continue_answer2 = continue_question2
+        if continue_answer2 == 'n':
             print('Terminating this program.')
+            logging.debug('User terminated program due to errors with fetchJobSubStats.py.')
             sys.exit()
     
             
