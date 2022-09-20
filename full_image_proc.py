@@ -20,7 +20,12 @@ import logging
 
 #create log file for debugging
 today = date.today()
-logging.basicConfig(filename=f'{today}_pipeline_automation.out', level=logging.DEBUG, format='%(asctime)s | %(name)s | %(levelname)s | %(message)s')
+
+output_dir_exists = os.path.exists('./image_proc_outputs/')
+if not output_dir_exists:
+        os.mkdir('./image_proc_outputs/')
+
+logging.basicConfig(filename=f'./image_proc_outputs/{today}_pipeline_automation.out', level=logging.DEBUG, format='%(asctime)s | %(name)s | %(levelname)s | %(message)s')
 
 #start by asking if its a test run to see if we will run the testing suite or the regular automation
 ask_test = input('Is this a test run? [y/n]: ')
@@ -63,7 +68,7 @@ if test_criteria == 1:
     command = ['python configure_dag.py']
 #             command = ['pwd']
             
-
+    logging.info('Code now running from DESGW-Pipeline-Testing-Suite...')
     print("Running " + command[0])
     error_dag = 0
     process = subprocess.Popen(command[0], bufsize=1, shell=True, universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -151,21 +156,25 @@ if test_criteria == 1:
             
 #regular pipeline
 elif test_criteria == 0:
+
     #check if gw_workflow folder exists. if it doesnt, clone it from github
     filepath = ['../gw_workflow']
     isExist = os.path.exists(filepath[0])
     if isExist:
         print('gw_workflow found')
     else:
+        logging.info('gw_workflow not found. Cloning github repository.')
         git_command = ['git clone https://github.com/SSantosLab/gw_workflow.git ../gw_workflow' ]
         print('Running '+git_command[0]+'in order to clone necessary folder gw_workflow...')
         git_output = os.system(git_command[0])
         #check if the system command will run successfully. if it does, output will be 0 with os.system. if it doesn't, raise exception. if you got this error, try manually git cloning https://github.com/SSantosLab/gw_workflow.git one folder back in a folder called gw_workflow
         if git_output != 0:
             raise ValueError('Something went wrong with cloning gw_workflow. Please manually run or try again.')
+            logging.warning('There was an issue with cloning gw_workflow.')
             
     #changing directory because needs to run in gw_workflow
     os.chdir('../gw_workflow')
+    logging.info('Code now running in gw_workflow.')
     
     #test season numbers are 2206 and 2208
     test_season_check = (input("Would you like to use a test season number? [y/n]: "))
@@ -183,6 +192,7 @@ elif test_criteria == 0:
         elif SEASON == (2208):
             print('Success! Season will update to 2208.')
         else:
+            logging.warning('User specified that they wanted a test season number, of which there are only two (2206 and 2208). They did not pick either of those, so the code is automatically setting it to 2206.')
             print("Error: you didn't pick 2206 or 2208. System is setting it to 2206. If you need it to be 2208, please manually update dagmaker.rc.")
             SEASON = 2206
 
@@ -248,7 +258,10 @@ elif test_criteria == 0:
                         SEASON = new_value
                         i = 0        
                 elif answer_input != ('n'):  
-                    raise Exception('You gotta enter y or n or the code will break for now.')
+                    new_season = (input("Please enter a new value for SEASON:"))
+                    new_value = int(new_season)
+                    SEASON = new_value
+                    i=0
                 else:
                     new_input = input("Please enter a new value for SEASON:")
                     SEASON = new_input
@@ -260,6 +273,7 @@ elif test_criteria == 0:
 
             else:
                 raise ERROR("Something's gone wrong. Please restart and input a new season number.")
+                logging.debug('Something went wrong with choosing a unique season value.')
 
     else:
         raise Exception('Please restart and enter [y/n]. ')
@@ -710,7 +724,7 @@ elif test_criteria == 0:
         file_to_read.close()
 
         return elist
-
+    
     def run_dagsh(exps_to_run, finished_exps, exp_set):
         while True:
             try:
@@ -722,12 +736,6 @@ elif test_criteria == 0:
             else:
                 #if no exception has been raised, create the command and add the task completion message to finished_exps queue
                 path_find_list = sys.path
-                pycurl_path = '/cvmfs/fermilab.opensciencegrid.org/products/common/prd/pycurl/v7_16_4/Linux64bit-2-6-2-12/pycurl'
-                if pycurl_path in path_find_list:
-                    print('Found the path to pycurl.')
-                if pycurl_path not in path_find_list:
-                    print('Missing path to pycurl. Appending path now.')
-                    sys.path.append('/cvmfs/fermilab.opensciencegrid.org/products/common/prd/pycurl/v7_16_4/Linux64bit-2-6-2-12/pycurl')
 
                 #initialize command
                 start_time_make_dag = time.time()
@@ -757,14 +765,14 @@ elif test_criteria == 0:
                 start_time_submit_dag = time.time()
                 print("Running" + new_command[0])
     #             os.system(new_command[0])
-                process = subprocess.Popen(new_command[0], bufsize=1, shell=True, universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-                stdout, stderr = process.communicate()
-                f = open('dag_submission_'+exp_set[current_exp]+'.out', 'w')
-                f.write(stdout)
-                if stderr != None:
-                    f.write(stderr)
-                    print('Errors found in dag submission; dags may have to be submitted manually. Please check the dag_submission.out files for more information.')
-                f.close()
+#                 process = subprocess.Popen(new_command[0], bufsize=1, shell=True, universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+#                 stdout, stderr = process.communicate()
+#                 f = open('dag_submission_'+exp_set[current_exp]+'.out', 'w')
+#                 f.write(stdout)
+#                 if stderr != None:
+#                     f.write(stderr)
+#                     print('Errors found in dag submission; dags may have to be submitted manually. Please check the dag_submission.out files for more information.')
+#                 f.close()
                 submit_time = str((time.time() - start_time_submit_dag)/60)
                 print("All done with " + new_command[0] + '. It took ' + submit_time + ' minutes.')
 
@@ -776,7 +784,8 @@ elif test_criteria == 0:
                 #pause the system for a bit so that it has time to finish executing 
                 time.sleep(0.5)
         return True
-
+    
+    
     #source setup img proc, necessary for dagmaker
     cwd = os.getcwd()
     command_source = ['source '+cwd+'/setup_img_proc.sh']
@@ -789,30 +798,33 @@ elif test_criteria == 0:
         print('Module os.sys returned the error:')
         print(output)
         raise ValueError('Something went wrong with setup_img_proc.sh. Please manually run or try again.')
+        logging.warning('Something went wrong with setup_img_proc.sh.')
 
     if bench_criteria:
         print("We haven't made the benchmark test exp list yet. This is a placeholder.")
-        inputted_exp_list = (input("Please input the filepath to your exp.list file, relative to gw_workflow or as a full path: "))
-
+        
+    inputted_exp_list = (input("Please input the filepath to your exp.list file, relative to gw_workflow or as a full path: "))
+        
+    while i < 1:
         isExist = os.path.exists(inputted_exp_list)
 
     #         subprocess.check_output(new_command[0], stderr=subprocess.STDOUT)
 
         if not isExist:
-            inputted_exp_list = (input("Error, could not find your .list file. Please check location then input the filepath relative to gw_workflow one more time: "))
+                inputted_exp_list = (input("Error, could not find your .list file. Please check location then input the filepath relative to gw_workflow one more time: "))
+                logging.warning(f"User's inputted exposure list wasn't found. Inputted list was {inputted_exp_list}")
 
 
-    else:
+        else:
 
-        inputted_exp_list = (input("Please input the filepath to your exp.list file, relative to gw_workflow or as a full path: "))
+            inputted_exp_list = (input("Please input the filepath to your exp.list file, relative to gw_workflow or as a full path: "))
 
-        isExist = os.path.exists(inputted_exp_list)
+            isExist = os.path.exists(inputted_exp_list)
 
     #         subprocess.check_output(new_command[0], stderr=subprocess.STDOUT)
 
-        if not isExist:
-            inputted_exp_list = (input("Error, could not find your .list file. Please check location then input the filepath relative to gw_workflow one more time: "))
 
+    logging.warning(f"User's inputted exposure list was not found. The inputted exposure list location was {inputted_exp_list}")
     # filepath = 'exposures_jul27.list'
     filepath = inputted_exp_list
     sample_exp_set = EXPlist(filepath)
@@ -860,6 +872,7 @@ elif test_criteria == 0:
     else:
         print('os.system returned error number:')
         print(output)
+        logging.warning(f'os.system returned error number {output} when trying to run . /cvmfs/des.opensciencegrid.org/eeups/startupcachejob31i.sh.')
         raise ValueError('Something went wrong with the command. Please manually run or try again.')
 
     #get the output file needed for post processing
@@ -910,16 +923,22 @@ elif test_criteria == 0:
 
         f.close
 
-#     path_find_list = sys.path
-#     pycurl_path = '/cvmfs/fermilab.opensciencegrid.org/products/common/prd/pycurl/v7_16_4/Linux64bit-2-6-2-12/pycurl'
-#     if pycurl_path in path_find_list:
-#         print('Found the path to pycurl.')
-#     if pycurl_path not in path_find_list:
-#         print('Missing path to pycurl. Appending path now.')
-#         sys.path.append('/cvmfs/fermilab.opensciencegrid.org/products/common/prd/pycurl/v7_16_4/Linux64bit-2-6-2-12/pycurl')
+    path_find_list = sys.path
+    pycurl_path = '/cvmfs/fermilab.opensciencegrid.org/products/common/prd/pycurl/v7_16_4/Linux64bit-2-6-2-12/pycurl'
+    if pycurl_path in path_find_list:
+        print('Found the path to pycurl.')
+    if pycurl_path not in path_find_list:
+        print('Missing path to pycurl. Appending path now.')
+        sys.path.append('/cvmfs/fermilab.opensciencegrid.org/products/common/prd/pycurl/v7_16_4/Linux64bit-2-6-2-12/pycurl')
+        path_find_list = sys.path
+        logging.warning(f'System was missing the path to pycurl. The code attempted to correct this with the following reflection on its path: {path_find_list}')
+        
+    env_var = os.environ
 
-
-
+    logging.debug(f'Environment information before running multiprocessing:{dict(env_var)}')
+    
+    
+    
     start_time_multiproc = time.time()
     if __name__ == '__main__':
 
@@ -928,7 +947,9 @@ elif test_criteria == 0:
     finish_time = str((time.time() - start_time_multiproc)/60)
     print('Finished with dag creation and submission. Multiprocessing took '+finish_time+' minutes.')
 
+    env_var = os.environ
 
+    logging.debug(f'Environment information after running multiprocessing:{dict(env_var)}')
     #exp_info is your list with (exp_num band, exp_num band), other_info is the nite and other info that i will get from dagmaker upon combining codes
 
     print('Image processing completed.')
