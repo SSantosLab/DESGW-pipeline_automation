@@ -764,15 +764,15 @@ elif test_criteria == 0:
                 new_command = [path + ' -G des --role=DESGW file://desgw_pipeline_' + exp_set[current_exp] + '.dag']
                 start_time_submit_dag = time.time()
                 print("Running" + new_command[0])
-    #             os.system(new_command[0])
-#                 process = subprocess.Popen(new_command[0], bufsize=1, shell=True, universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-#                 stdout, stderr = process.communicate()
-#                 f = open('dag_submission_'+exp_set[current_exp]+'.out', 'w')
-#                 f.write(stdout)
-#                 if stderr != None:
-#                     f.write(stderr)
-#                     print('Errors found in dag submission; dags may have to be submitted manually. Please check the dag_submission.out files for more information.')
-#                 f.close()
+                os.system(new_command[0])
+                process = subprocess.Popen(new_command[0], bufsize=1, shell=True, universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                stdout, stderr = process.communicate()
+                f = open('dag_submission_'+exp_set[current_exp]+'.out', 'w')
+                f.write(stdout)
+                if stderr != None:
+                    f.write(stderr)
+                    print('Errors found in dag submission; dags may have to be submitted manually. Please check the dag_submission.out files for more information.')
+                f.close()
                 submit_time = str((time.time() - start_time_submit_dag)/60)
                 print("All done with " + new_command[0] + '. It took ' + submit_time + ' minutes.')
 
