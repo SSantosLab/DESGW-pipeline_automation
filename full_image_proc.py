@@ -715,7 +715,9 @@ elif test_criteria == 0:
          file.writelines( data )
          file.close()
 
-        
+    #setting environment variables from sourcing
+    os.environ['PYTHONPATH']='/cvmfs/fermilab.opensciencegrid.org/products/common/prd/pycurl/v7_16_4/Linux64bit-2-6-2-12/pycurl:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/jobsub_client/v1_3/NULL:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/ifdhc/v2_6_1/Linux64bit-3-10-2-17-python36/lib/python:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/jobsub_client/v1_3/NULL:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/ifdhc/v2_6_1/Linux64bit-3-10-2-17-python36/lib/python:/cvmfs/des.opensciencegrid.org/2015_Q2/eeups/SL6/eups/1.2.30/python'
+    os.environ['PATH']='/cvmfs/fermilab.opensciencegrid.org/products/common/prd/curl/v7_64_1/Linux64bit-3-10/bin:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/cigetcert/v1_16_1/Linux64bit-3-10-2-17/bin:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/jobsub_client/v1_3/NULL:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/ifdhc/v2_6_1/Linux64bit-3-10-2-17-python36/bin:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/curl/v7_64_1/Linux64bit-3-10/bin:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/cigetcert/v1_16_1/Linux64bit-3-10-2-17/bin:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/jobsub_client/v1_3/NULL:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/ifdhc/v2_6_1/Linux64bit-3-10-2-17-python36/bin:/cvmfs/des.opensciencegrid.org/fnal/anaconda2/envs/des18a/bin:/cvmfs/des.opensciencegrid.org/fnal/anaconda2/condabin:/usr/lib64/qt-3.3/bin:/opt/puppetlabs/bin:/home/s1/eliseke/perl5/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/opt/puppetlabs/bin:/cvmfs/des.opensciencegrid.org/2015_Q2/eeups/SL6/eups/1.2.30/bin'
     def EXPlist(explist):
 
         file_to_read = open(explist,'r')
@@ -759,9 +761,9 @@ elif test_criteria == 0:
                 new_command = ['jobsub_submit_dag -G des --role=DESGW file://desgw_pipeline_' + exp_set[current_exp] + '.dag']
     #             new_command = ['/cvmfs/fermilab.opensciencegrid.org/products/common/prd/jobsub_client/v1_3/NULL/jobsub_submit_dag -G des --role=DESGW file://desgw_pipeline_' + exp_set[current_exp] + '.dag']
 
-                path = '/cvmfs/fermilab.opensciencegrid.org/products/common/prd/jobsub_client/v1_3/NULL/jobsub_submit_dag'
-    #                 path = 'jobsub_submit_dag'
-                new_command = [path + ' -G des --role=DESGW file://desgw_pipeline_' + exp_set[current_exp] + '.dag']
+                path = '/cvmfs/fermilab.opensciencegrid.org/products/common/prd/jobsub_client/v1_3_5/NULL/jobsub_submit_dag'
+#     #                 path = 'jobsub_submit_dag'
+                new_command = [path +' -G des --role=DESGW file://desgw_pipeline_' + exp_set[current_exp] + '.dag']
                 start_time_submit_dag = time.time()
                 print("Running" + new_command[0])
                 os.system(new_command[0])
@@ -787,18 +789,18 @@ elif test_criteria == 0:
     
     
     #source setup img proc, necessary for dagmaker
-    cwd = os.getcwd()
-    command_source = ['source '+cwd+'/setup_img_proc.sh']
-    print('Running'+command_source[0])
-    #ensure that source setup_diff_img will run by checking if there's a system error raised. 
-    output = os.system(command_source[0])
-    if output == 0:
-        os.system(command_source[0])
-    else:
-        print('Module os.sys returned the error:')
-        print(output)
-        raise ValueError('Something went wrong with setup_img_proc.sh. Please manually run or try again.')
-        logging.warning('Something went wrong with setup_img_proc.sh.')
+#     cwd = os.getcwd()
+#     command_source = ['source '+cwd+'/setup_img_proc.sh']
+#     print('Running'+command_source[0])
+#     #ensure that source setup_diff_img will run by checking if there's a system error raised. 
+#     output = os.system(command_source[0])
+#     if output == 0:
+#         os.system(command_source[0])
+#     else:
+#         print('Module os.sys returned the error:')
+#         print(output)
+#         raise ValueError('Something went wrong with setup_img_proc.sh. Please manually run or try again.')
+#         logging.warning('Something went wrong with setup_img_proc.sh.')
 
     if bench_criteria:
         print("We haven't made the benchmark test exp list yet. This is a placeholder.")
@@ -864,18 +866,17 @@ elif test_criteria == 0:
 
         return True
 
-    command_2 = ['. /cvmfs/des.opensciencegrid.org/eeups/startupcachejob31i.sh']
-    print("Running" + command_2[0])
-    output = os.system(command_2[0])
-    if output == 0:
-        os.system(command_2[0])
-    else:
-        print('os.system returned error number:')
-        print(output)
-        logging.warning(f'os.system returned error number {output} when trying to run . /cvmfs/des.opensciencegrid.org/eeups/startupcachejob31i.sh.')
-        raise ValueError('Something went wrong with the command. Please manually run or try again.')
+#     command_2 = ['. /cvmfs/des.opensciencegrid.org/eeups/startupcachejob31i.sh']
+#     print("Running" + command_2[0])
+#     output = os.system(command_2[0])
+#     if output == 0:
+#         os.system(command_2[0])
+#     else:
+#         print('os.system returned error number:')
+#         print(output)
+#         logging.warning(f'os.system returned error number {output} when trying to run . /cvmfs/des.opensciencegrid.org/eeups/startupcachejob31i.sh.')
+#         raise ValueError('Something went wrong with the command. Please manually run or try again.')
 
-    #get the output file needed for post processing
     with open('exposures.list') as f:
         data = []
         for line in f: 
@@ -923,20 +924,19 @@ elif test_criteria == 0:
 
         f.close
 
-    path_find_list = sys.path
-    pycurl_path = '/cvmfs/fermilab.opensciencegrid.org/products/common/prd/pycurl/v7_16_4/Linux64bit-2-6-2-12/pycurl'
-    if pycurl_path in path_find_list:
-        print('Found the path to pycurl.')
-    if pycurl_path not in path_find_list:
-        print('Missing path to pycurl. Appending path now.')
-        sys.path.append('/cvmfs/fermilab.opensciencegrid.org/products/common/prd/pycurl/v7_16_4/Linux64bit-2-6-2-12/pycurl')
-        path_find_list = sys.path
-        logging.warning(f'System was missing the path to pycurl. The code attempted to correct this with the following reflection on its path: {path_find_list}')
+#     path_find_list = sys.path
+#     pycurl_path = '/cvmfs/fermilab.opensciencegrid.org/products/common/prd/pycurl/v7_16_4/Linux64bit-2-6-2-12/pycurl'
+#     if pycurl_path in path_find_list:
+#         print('Found the path to pycurl.')
+#     if pycurl_path not in path_find_list:
+#         print('Missing path to pycurl. Appending path now.')
+#         sys.path.append('/cvmfs/fermilab.opensciencegrid.org/products/common/prd/pycurl/v7_16_4/Linux64bit-2-6-2-12/pycurl')
+#         path_find_list = sys.path
+#         logging.warning(f'System was missing the path to pycurl. The code attempted to correct this with the following reflection on its path: {path_find_list}')
         
     env_var = os.environ
 
     logging.debug(f'Environment information before running multiprocessing:{dict(env_var)}')
-    
     
     
     start_time_multiproc = time.time()
