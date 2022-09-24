@@ -27,15 +27,52 @@ if not output_dir_exists:
 
 logging.basicConfig(filename=f'./image_proc_outputs/{today}_pipeline_automation.out', level=logging.DEBUG, format='%(asctime)s | %(name)s | %(levelname)s | %(message)s')
 
+#check if gw_workflow folder exists. if it doesnt, clone it from github
+filepath = ['../gw_workflow']
+isExist = os.path.exists(filepath[0])
+if isExist:
+      print('gw_workflow found')
+else:
+      logging.info('gw_workflow not found. Cloning github repository.')
+      git_command = ['git clone https://github.com/SSantosLab/gw_workflow.git ../gw_workflow' ]
+      print('Running '+git_command[0]+'in order to clone necessary folder gw_workflow...')
+      git_output = os.system(git_command[0])
+      #check if the system command will run successfully. if it does, output will be 0 with os.system. if it doesn't, raise exception. if you got this error, try manually git cloning https://github.com/SSantosLab/gw_workflow.git one folder back in a folder called gw_workflow
+      if git_output != 0:
+           raise ValueError('Something went wrong with cloning gw_workflow. Please manually run or try again.')
+           logging.warning('There was an issue with cloning gw_workflow.')
+      
+#figure out if pipeline testing suite is present. if not, clone it one folder back
+filepath = ['../DESGW-Pipeline-Testing-Suite']
+isExist = os.path.exists(filepath[0])
+if isExist:
+      print('Pipeline testing suite found.')
+else:
+      logging.debug('Pipeline testing suite not found. Code is cloning it at ../DESGW-Pipeline-Testing-Suite')
+      git_command = ['git clone https://github.com/SSantosLab/DESGW-Pipeline-Testing-Suite.git ../DESGW-Pipeline-Testing-Suite' ]
+      print('Running '+git_command[0]+'in order to clone necessary folder DESGW-Pipeline-Testing-Suite...')
+      git_output = os.system(git_command[0])
+
+#check if the system command will run successfully. if it does, output will be 0 with os.system. if it doesn't, raise exception. if you got this error, try manually git cloning https://github.com/SSantosLab/DESGW-Pipeline-Testing-Suite.git one folder back in a folder called gw_workflow
+      if git_output != 0:
+            logging.debug('Something went wrong with finding and/or cloning DESGW-Pipeline-Testing-Suite. Code should stop running.')
+            raise ValueError('Something went wrong with cloning DESGW-Pipeline-Testing-Suite. Please manually run or try again.')
+            
 #start by asking if its a test run to see if we will run the testing suite or the regular automation
 ask_test = input('Is this a test run? [y/n]: ')
 answer_test = ask_test
 bench_criteria = 0
 test_criteria = 0
 
-env_var = os.environ
+#set variables, essentially replacing the sourcing of the two .sh files
+os.environ['PYTHONPATH']='/cvmfs/fermilab.opensciencegrid.org/products/common/prd/pycurl/v7_16_4/Linux64bit-2-6-2-12/pycurl:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/jobsub_client/v1_3/NULL:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/ifdhc/v2_6_1/Linux64bit-3-10-2-17-python36/lib/python:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/jobsub_client/v1_3/NULL:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/ifdhc/v2_6_1/Linux64bit-3-10-2-17-python36/lib/python:/cvmfs/des.opensciencegrid.org/2015_Q2/eeups/SL6/eups/1.2.30/python'
+os.environ['PATH']='/cvmfs/fermilab.opensciencegrid.org/products/common/prd/curl/v7_64_1/Linux64bit-3-10/bin:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/cigetcert/v1_16_1/Linux64bit-3-10-2-17/bin:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/jobsub_client/v1_3/NULL:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/ifdhc/v2_6_1/Linux64bit-3-10-2-17-python36/bin:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/curl/v7_64_1/Linux64bit-3-10/bin:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/cigetcert/v1_16_1/Linux64bit-3-10-2-17/bin:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/jobsub_client/v1_3/NULL:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/ifdhc/v2_6_1/Linux64bit-3-10-2-17-python36/bin:/cvmfs/des.opensciencegrid.org/fnal/anaconda2/envs/des18a/bin:/cvmfs/des.opensciencegrid.org/fnal/anaconda2/condabin:/usr/lib64/qt-3.3/bin:/opt/puppetlabs/bin:/home/s1/eliseke/perl5/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/opt/puppetlabs/bin:/cvmfs/des.opensciencegrid.org/2015_Q2/eeups/SL6/eups/1.2.30/bin'
 
-logging.debug(f'Environment information this run:{dict(env_var)}')
+#record variables for debugging purposes. this will be repeated later as well
+pythonpath_var = os.environ['PYTHONPATH']
+path_var = os.environ['PATH']
+
+logging.debug(f'Path and Python path variables before moving directories: {pythonpath_var} {path_var}')
 
 #determine if its a benchmark test, in which case some specific exposures will need to be pulled later
 if answer_test == 'y':
@@ -50,19 +87,6 @@ if answer_test == 'y':
 
 #testing pipeline
 if test_criteria == 1:
-    filepath = ['../DESGW-Pipeline-Testing-Suite']
-    isExist = os.path.exists(filepath[0])
-    if isExist:
-        print('Pipeline testing suite found.')
-    else:
-        logging.debug('Pipeline testing suite not found. Code is cloning it at ../DESGW-Pipeline-Testing-Suite')
-        git_command = ['git clone https://github.com/SSantosLab/DESGW-Pipeline-Testing-Suite.git ../DESGW-Pipeline-Testing-Suite' ]
-        print('Running '+git_command[0]+'in order to clone necessary folder DESGW-Pipeline-Testing-Suite...')
-        git_output = os.system(git_command[0])
-        #check if the system command will run successfully. if it does, output will be 0 with os.system. if it doesn't, raise exception. if you got this error, try manually git cloning https://github.com/SSantosLab/DESGW-Pipeline-Testing-Suite.git one folder back in a folder called gw_workflow
-        if git_output != 0:
-            logging.debug('Something went wrong with finding and/or cloning DESGW-Pipeline-Testing-Suite. Code should stop running.')
-            raise ValueError('Something went wrong with cloning DESGW-Pipeline-Testing-Suite. Please manually run or try again.')
     os.chdir('../DESGW-Pipeline-Testing-Suite')
     
     command = ['python configure_dag.py']
@@ -157,20 +181,6 @@ if test_criteria == 1:
 #regular pipeline
 elif test_criteria == 0:
 
-    #check if gw_workflow folder exists. if it doesnt, clone it from github
-    filepath = ['../gw_workflow']
-    isExist = os.path.exists(filepath[0])
-    if isExist:
-        print('gw_workflow found')
-    else:
-        logging.info('gw_workflow not found. Cloning github repository.')
-        git_command = ['git clone https://github.com/SSantosLab/gw_workflow.git ../gw_workflow' ]
-        print('Running '+git_command[0]+'in order to clone necessary folder gw_workflow...')
-        git_output = os.system(git_command[0])
-        #check if the system command will run successfully. if it does, output will be 0 with os.system. if it doesn't, raise exception. if you got this error, try manually git cloning https://github.com/SSantosLab/gw_workflow.git one folder back in a folder called gw_workflow
-        if git_output != 0:
-            raise ValueError('Something went wrong with cloning gw_workflow. Please manually run or try again.')
-            logging.warning('There was an issue with cloning gw_workflow.')
             
     #changing directory because needs to run in gw_workflow
     os.chdir('../gw_workflow')
@@ -715,9 +725,6 @@ elif test_criteria == 0:
          file.writelines( data )
          file.close()
 
-    #setting environment variables from sourcing
-    os.environ['PYTHONPATH']='/cvmfs/fermilab.opensciencegrid.org/products/common/prd/pycurl/v7_16_4/Linux64bit-2-6-2-12/pycurl:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/jobsub_client/v1_3/NULL:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/ifdhc/v2_6_1/Linux64bit-3-10-2-17-python36/lib/python:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/jobsub_client/v1_3/NULL:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/ifdhc/v2_6_1/Linux64bit-3-10-2-17-python36/lib/python:/cvmfs/des.opensciencegrid.org/2015_Q2/eeups/SL6/eups/1.2.30/python'
-    os.environ['PATH']='/cvmfs/fermilab.opensciencegrid.org/products/common/prd/curl/v7_64_1/Linux64bit-3-10/bin:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/cigetcert/v1_16_1/Linux64bit-3-10-2-17/bin:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/jobsub_client/v1_3/NULL:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/ifdhc/v2_6_1/Linux64bit-3-10-2-17-python36/bin:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/curl/v7_64_1/Linux64bit-3-10/bin:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/cigetcert/v1_16_1/Linux64bit-3-10-2-17/bin:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/jobsub_client/v1_3/NULL:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/ifdhc/v2_6_1/Linux64bit-3-10-2-17-python36/bin:/cvmfs/des.opensciencegrid.org/fnal/anaconda2/envs/des18a/bin:/cvmfs/des.opensciencegrid.org/fnal/anaconda2/condabin:/usr/lib64/qt-3.3/bin:/opt/puppetlabs/bin:/home/s1/eliseke/perl5/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/opt/puppetlabs/bin:/cvmfs/des.opensciencegrid.org/2015_Q2/eeups/SL6/eups/1.2.30/bin'
     def EXPlist(explist):
 
         file_to_read = open(explist,'r')
@@ -745,14 +752,14 @@ elif test_criteria == 0:
     #             command = ['pwd']
 
                 #process for each command 
-                print("Running " + command[0])
-                process = subprocess.Popen(command[0], bufsize=1, shell=True, universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-                stdout, stderr = process.communicate()
-                f = open('dagmaker_'+exp_set[current_exp]+'.out', 'w')
-                f.write(stdout)
-                if stderr != None:
-                    f.write(stderr)
-                f.close()
+#                 print("Running " + command[0])
+#                 process = subprocess.Popen(command[0], bufsize=1, shell=True, universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+#                 stdout, stderr = process.communicate()
+#                 f = open('dagmaker_'+exp_set[current_exp]+'.out', 'w')
+#                 f.write(stdout)
+#                 if stderr != None:
+#                     f.write(stderr)
+#                 f.close()
                 #print so it knows its running 
                 make_time = str((time.time() - start_time_make_dag)/60)
                 print("All done with " + command[0] + '. It took ' + make_time + ' minutes.')
@@ -934,9 +941,10 @@ elif test_criteria == 0:
 #         path_find_list = sys.path
 #         logging.warning(f'System was missing the path to pycurl. The code attempted to correct this with the following reflection on its path: {path_find_list}')
         
-    env_var = os.environ
+    pythonpath_var = os.environ['PYTHONPATH']
+    path_var = os.environ['PATH']
 
-    logging.debug(f'Environment information before running multiprocessing:{dict(env_var)}')
+    logging.debug(f'Path and Python path variables before running multiproc: {pythonpath_var} {path_var}')
     
     
     start_time_multiproc = time.time()
@@ -947,9 +955,10 @@ elif test_criteria == 0:
     finish_time = str((time.time() - start_time_multiproc)/60)
     print('Finished with dag creation and submission. Multiprocessing took '+finish_time+' minutes.')
 
-    env_var = os.environ
+    pythonpath_var = os.environ['PYTHONPATH']
+    path_var = os.environ['PATH']
 
-    logging.debug(f'Environment information after running multiprocessing:{dict(env_var)}')
+    logging.debug(f'Path and Python path variables after running multiproc: {pythonpath_var} {path_var}')
     #exp_info is your list with (exp_num band, exp_num band), other_info is the nite and other info that i will get from dagmaker upon combining codes
 
     print('Image processing completed.')
