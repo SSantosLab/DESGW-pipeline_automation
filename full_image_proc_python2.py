@@ -752,15 +752,15 @@ elif test_criteria == 0:
     #             command = ['pwd']
 
                 #process for each command 
-#                 print("Running " + command[0])
-#                 process = subprocess.Popen(command[0], bufsize=1, shell=True, universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-#                 stdout, stderr = process.communicate()
-#                 f = open('dagmaker_'+exp_set[current_exp]+'.out', 'w')
-#                 f.write(stdout)
-#                 if stderr != None:
-#                     f.write(stderr)
-#                 f.close()
-                #print so it knows its running 
+                print("Running " + command[0])
+                process = subprocess.Popen(command[0], bufsize=1, shell=True, universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                stdout, stderr = process.communicate()
+                f = open('dagmaker_'+exp_set[current_exp]+'.out', 'w')
+                f.write(stdout)
+                if stderr != None:
+                    f.write(stderr)
+                f.close()
+#                print so it knows its running 
                 make_time = str((time.time() - start_time_make_dag)/60)
                 print("All done with " + command[0] + '. It took ' + make_time + ' minutes.')
 
@@ -768,9 +768,9 @@ elif test_criteria == 0:
                 new_command = ['jobsub_submit_dag -G des --role=DESGW file://desgw_pipeline_' + exp_set[current_exp] + '.dag']
     #             new_command = ['/cvmfs/fermilab.opensciencegrid.org/products/common/prd/jobsub_client/v1_3/NULL/jobsub_submit_dag -G des --role=DESGW file://desgw_pipeline_' + exp_set[current_exp] + '.dag']
 
-                path = '/cvmfs/fermilab.opensciencegrid.org/products/common/prd/jobsub_client/v1_3_5/NULL/jobsub_submit_dag'
+#                path = '/cvmfs/fermilab.opensciencegrid.org/products/common/prd/jobsub_client/v1_3_5/NULL/jobsub_submit_dag'
 #     #                 path = 'jobsub_submit_dag'
-                new_command = [path +' -G des --role=DESGW file://desgw_pipeline_' + exp_set[current_exp] + '.dag']
+#                new_command = [path +' -G des --role=DESGW file://desgw_pipeline_' + exp_set[current_exp] + '.dag']
                 start_time_submit_dag = time.time()
                 print("Running" + new_command[0])
                 os.system(new_command[0])
