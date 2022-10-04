@@ -25,7 +25,7 @@ output_dir_exists = os.path.exists('./image_proc_outputs/')
 if not output_dir_exists:
         os.mkdir('./image_proc_outputs/')
 
-logging.basicConfig(filename='./image_proc_outputs/'+today+'_pipeline_automation.out', level=logging.DEBUG, format='%(asctime)s | %(name)s | %(levelname)s | %(message)s')
+logging.basicConfig(filename='./image_proc_outputs/'+today+'_pipeline_automation.out', level=logging.DEBUG)
 
 #check if gw_workflow folder exists. if it doesnt, clone it from github
 filepath = ['../gw_workflow']
