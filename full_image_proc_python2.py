@@ -19,7 +19,7 @@ from datetime import date
 import logging
 
 #create log file for debugging
-today = date.today()
+today = str(date.today())
 
 output_dir_exists = os.path.exists('./image_proc_outputs/')
 if not output_dir_exists:
