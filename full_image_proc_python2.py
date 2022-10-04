@@ -25,7 +25,7 @@ output_dir_exists = os.path.exists('./image_proc_outputs/')
 if not output_dir_exists:
         os.mkdir('./image_proc_outputs/')
 
-# logging.basicConfig(filename=f'./image_proc_outputs/{today}_pipeline_automation.out', level=logging.DEBUG, format='%(asctime)s | %(name)s | %(levelname)s | %(message)s')
+logging.basicConfig(filename='./image_proc_outputs/'+today+'_pipeline_automation.out', level=logging.DEBUG, format='%(asctime)s | %(name)s | %(levelname)s | %(message)s')
 
 #check if gw_workflow folder exists. if it doesnt, clone it from github
 filepath = ['../gw_workflow']
@@ -56,7 +56,7 @@ else:
 #check if the system command will run successfully. if it does, output will be 0 with os.system. if it doesn't, raise exception. if you got this error, try manually git cloning https://github.com/SSantosLab/DESGW-Pipeline-Testing-Suite.git one folder back in a folder called gw_workflow
       if git_output != 0:
             logging.debug('Something went wrong with finding and/or cloning DESGW-Pipeline-Testing-Suite. Code should stop running.')
-            raise ValueError('Something went wrong with cloning DESGW-Pipeline-Testing-Suite. Please manually run or try again.')
+            raise ValueError('Something went wrong with cloning DESGW-Pipeline-Testing-Suite. Please clone it manually or try again.')
             
 #start by asking if its a test run to see if we will run the testing suite or the regular automation
 ask_test = raw_input('Is this a test run? [y/n]: ')
@@ -64,7 +64,7 @@ answer_test = ask_test
 bench_criteria = 0
 test_criteria = 0
 
-#set variables, essentially replacing the sourcing of the two .sh files
+#set path variables, essentially replacing the sourcing of the two .sh files since that occurs in a subshell not accessible by the code
 os.environ['PYTHONPATH']='/cvmfs/fermilab.opensciencegrid.org/products/common/prd/jobsub_client/v1_3/NULL:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/ifdhc/v2_6_1/Linux64bit-3-10-2-17-python36/lib/python:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/pycurl/v7_16_4/Linux64bit-2-6-2-12/pycurl:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/jobsub_client/v1_3/NULL:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/ifdhc/v2_6_1/Linux64bit-3-10-2-17-python36/lib/python:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/pycurl/v7_16_4/Linux64bit-2-6-2-12/pycurl:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/jobsub_client/v1_3/NULL:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/ifdhc/v2_6_1/Linux64bit-3-10-2-17-python36/lib/python:/cvmfs/des.opensciencegrid.org/2015_Q2/eeups/SL6/eups/1.2.30/python'
 os.environ['PATH']='/cvmfs/fermilab.opensciencegrid.org/products/common/prd/curl/v7_64_1/Linux64bit-3-10/bin:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/cigetcert/v1_16_1/Linux64bit-3-10-2-17/bin:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/jobsub_client/v1_3/NULL:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/ifdhc/v2_6_1/Linux64bit-3-10-2-17-python36/bin:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/curl/v7_64_1/Linux64bit-3-10/bin:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/cigetcert/v1_16_1/Linux64bit-3-10-2-17/bin:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/jobsub_client/v1_3/NULL:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/ifdhc/v2_6_1/Linux64bit-3-10-2-17-python36/bin:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/curl/v7_64_1/Linux64bit-3-10/bin:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/cigetcert/v1_16_1/Linux64bit-3-10-2-17/bin:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/jobsub_client/v1_3/NULL:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/ifdhc/v2_6_1/Linux64bit-3-10-2-17-python36/bin:/cvmfs/des.opensciencegrid.org/fnal/anaconda2/envs/des18a/bin:/cvmfs/des.opensciencegrid.org/fnal/anaconda2/condabin:/usr/lib64/qt-3.3/bin:/opt/puppetlabs/bin:/home/s1/eliseke/perl5/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/opt/puppetlabs/bin:/cvmfs/des.opensciencegrid.org/2015_Q2/eeups/SL6/eups/1.2.30/bin'
 
@@ -302,7 +302,6 @@ elif test_criteria == 0:
     MAX_NITE = None
     SKIP_INCOMPLETE_SE = None
     DO_HEADER_CHECK = None
-
     TEFF_CUT_g = None
     TEFF_CUT_i = None
     TEFF_CUT_r= None
@@ -504,7 +503,7 @@ elif test_criteria == 0:
 
         elif (update == 'DO_HEADER_CHECK'):
             print('DO_HEADER_CHECK info: Turn off header check for FIELD, OBJECT, TILING if you want save time. Can do that if you have already fixed the headers elsewhere (for example when copying from DESDM).')
-            ask_sure = raw_input('Are you sure you want to proceed with updating DO_HEADER_CHECK? ')
+            ask_sure = raw_input('Are you sure you want to proceed with updating DO_HEADER_CHECK? [y/n]')
             answer_sure = ask_sure
             if answer_sure == 'y':
                 print('Syntax is [0/1].')
