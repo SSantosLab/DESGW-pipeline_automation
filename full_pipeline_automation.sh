@@ -1,5 +1,6 @@
 conda activate des18a
-source stup_img_proc.sh
+source ../gw_workflow/setup_img_proc.sh
+
 . /cvmfs/des.opensciencegrid.org/eeups/startupcachejob31i.sh
 conda deactivate
 conda activate des20a
