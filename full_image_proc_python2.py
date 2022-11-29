@@ -65,6 +65,7 @@ bench_criteria = 0
 test_criteria = 0
 
 #set path variables, essentially replacing the sourcing of the two .sh files since that occurs in a subshell not accessible by the code
+USER = os.getenv('USER')
 if USER == 'desgw':
     dagmaker_file = './DAGMaker.sh '
     print('You are running as desgw.')
