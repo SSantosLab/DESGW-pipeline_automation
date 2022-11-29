@@ -21,6 +21,7 @@ import logging
 #create log file for debugging
 today = date.today()
 
+
 output_dir_exists = os.path.exists('./image_proc_outputs/')
 if not output_dir_exists:
         os.mkdir('./image_proc_outputs/')
@@ -64,9 +65,15 @@ answer_test = ask_test
 bench_criteria = 0
 test_criteria = 0
 
-#set variables, essentially replacing the sourcing of the two .sh files
-os.environ['PYTHONPATH']='/cvmfs/fermilab.opensciencegrid.org/products/common/prd/pycurl/v7_16_4/Linux64bit-2-6-2-12/pycurl:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/jobsub_client/v1_3/NULL:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/ifdhc/v2_6_1/Linux64bit-3-10-2-17-python36/lib/python:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/jobsub_client/v1_3/NULL:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/ifdhc/v2_6_1/Linux64bit-3-10-2-17-python36/lib/python:/cvmfs/des.opensciencegrid.org/2015_Q2/eeups/SL6/eups/1.2.30/python'
-os.environ['PATH']='/cvmfs/fermilab.opensciencegrid.org/products/common/prd/curl/v7_64_1/Linux64bit-3-10/bin:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/cigetcert/v1_16_1/Linux64bit-3-10-2-17/bin:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/jobsub_client/v1_3/NULL:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/ifdhc/v2_6_1/Linux64bit-3-10-2-17-python36/bin:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/curl/v7_64_1/Linux64bit-3-10/bin:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/cigetcert/v1_16_1/Linux64bit-3-10-2-17/bin:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/jobsub_client/v1_3/NULL:/cvmfs/fermilab.opensciencegrid.org/products/common/prd/ifdhc/v2_6_1/Linux64bit-3-10-2-17-python36/bin:/cvmfs/des.opensciencegrid.org/fnal/anaconda2/envs/des18a/bin:/cvmfs/des.opensciencegrid.org/fnal/anaconda2/condabin:/usr/lib64/qt-3.3/bin:/opt/puppetlabs/bin:/home/s1/eliseke/perl5/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/opt/puppetlabs/bin:/cvmfs/des.opensciencegrid.org/2015_Q2/eeups/SL6/eups/1.2.30/bin'
+USER = os.getenv('USER')
+
+if USER == 'desgw':
+    dagmaker_file = './DAGMaker.sh '
+    print('You are running as desgw.')
+else:
+    dagmaker_file = './DAGMaker_proxyuser.sh '
+    print('You are not running as desgw.')
+
 
 #record variables for debugging purposes. this will be repeated later as well
 pythonpath_var = os.environ['PYTHONPATH']
@@ -748,7 +755,7 @@ elif test_criteria == 0:
 
                 #initialize command
                 start_time_make_dag = time.time()
-                command = [' ./DAGMaker.sh ' + exp_set[current_exp]]
+                command = [dagmaker_file + exp_set[current_exp]]
     #             command = ['pwd']
 
                 #process for each command 
