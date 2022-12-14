@@ -218,10 +218,10 @@ with open(current_exposures, 'w') as f:
 
 #ask user for
 
-ligoid = input('ligoid (ex. GW170814): ')
-triggerid = input('triggerid (ex. G298048): ')
-propid = input('propid (ex. 2017B-0110): ')
-triggermjd = input('triggermjd (ex. 57979.437): ')
+#ligoid = input('ligoid (ex. GW170814): ')
+#triggerid = input('triggerid (ex. G298048): ')
+#propid = input('propid (ex. 2017B-0110): ')
+#triggermjd = input('triggermjd (ex. 57979.437): ')
 
 print('creating .ini file with completed exposures list\n')
 
@@ -270,18 +270,13 @@ truthplusfile = truthtable['plusname']
 #Check if we want to SKIPTO
 
 if glob.glob('../Post-Processing/'+ outdir[2:] + '/makedatafiles/LightCurvesReal/*.dat'):
-    skip = input('It seems step 5 run_postproc has already been completed, would you like to skip to step 6? (y/n): ')
-    if skip == ('y'):
-        SKIPTO_flag = 6
-        print('\nWill run post processing from step 6')
-    else:
-        print('\nWill run post processing from scratch')
+    SKIPTO_flag = 6
+    print('\nWill run post processing from step 6')
 elif os.path.exists('../Post-Processing/' + outdir[2:] + '/truthtable'+str(season)+'/'+truthplusfile): #output from step 4
-    skip = input('\nIt seems step 4 run_postproc has already been completed, would you like to skip to step 5? (y/n): ')
-    if skip == ('y'):
-        SKIPTO_flag = 5
-    else:
-        print('Will run post processing from step 5')
+
+    SKIPTO_flag = 5
+    print('\nWill run post processing from step 5')
+
 else:
     print('No evidence of steps already completed in post processing, will not skip')
 
@@ -300,8 +295,6 @@ os.system('mv ' + str(current_exposures) + ' ../Post-Processing')
 os.system('source ../Post-Processing/diffimg_setup.sh')
 print('running diffimg_setup.sh\n')
 
-update_forcephoto_links = input('Are you running post processing for new exposures? (aka: run ./update_forcephoto_links.sh?) y/n: ')
-if update_forcephoto_links == ('y'):
     os.system('../Post-Processing/update_forcephoto_links.sh')
     
 #run_postproc.py
