@@ -57,31 +57,44 @@ else:
 #Read file outputted from image processing to get season, nite, exposure, band
 #If no file, input manually
 
+#Read file outputted from image processing to get season, nite, exposure, band
+#If no file, input manually
+
 try:
     img_proc_file = open("./image_proc_outputs/output.txt")
     lines = img_proc_file.readlines()
     
-    if input('.txt file with exposures found. Would you like to use this file? (y/n): ') == ('y'):
-        print('\nExtracting season, exposure, and band from sampeoutput.txt file\n')
-        
-        exposures = lines[0].strip()
-        exposures = exposures[1:-1]
-        exposures = list(exposures.split(","))
+    print('\nExtracting season, exposure, and band from output.txt file\n')
 
-        season = lines[1].strip()
+    exposures = lines[0].strip()
+    exposures = exposures[1:-1]
+    exposures = list(exposures.split(","))
 
-        print('Season: ' + season)
-        print('Exposures: ' + str(exposures))
-    
-    else:
-        exposures = [str(item) for item in input("Enter each exposure followed by band, separate with commas (ex. '938524 i, 938511 i, 938522 i'): ").split(',')]
-        season = input('Season: ')
-    
+    season = lines[1].strip()
+
+    print('Season: ' + season)
+    print('Exposures: ' + str(exposures))
     
 except:
-    print('no .txt file, must input\n')
-    exposures = [str(item) for item in input("Enter each exposure followed by band, separate with commas (ex. '938524 i, 938511 i, 938522 i'): ").split(',')]
+    print('no .txt file, must input exposures\n')
+    exposures = []
+    exposures_num = [str(item) for item in input("Enter each exposure separated by spaces (ex. '938524 938511 938522'): ").split(' ')]
     season = input('Season: ')
+    #get exposure band
+    try:
+        for exposure in exposures_num:
+            band_dirs = glob.glob('/pnfs/des/persistent/gw/exp/' + '*' + '/' + exposure +'/' + 'dp' + season + '/*')
+            first_band_dir = str(band_dirs[:1]).split('/')[-1:]
+            band_only = re.sub(r"[^a-zA-Z]+", "", str(first_band_dir))
+            exposure_w_band = exposure + ' ' + band_only
+            exposures.append(exposure_w_band)
+    except:
+        print('invalid exposures input')
+    
+    print('\nExposures with bands: ' + str(exposures))
+    
+
+
 
 
 # In[12]:
