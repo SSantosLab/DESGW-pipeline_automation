@@ -18,6 +18,17 @@ import datetime
 from collections import Counter
 
 
+
+
+#accept arguments
+
+parser = argparse.ArgumentParser(description=__doc__, 
+                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+parser.add_argument('--triggermjd')
+parser.add_argument('--propid')
+
+
+
 # In[2]:
 
 
@@ -220,8 +231,11 @@ with open(current_exposures, 'w') as f:
 
 #ligoid = input('ligoid (ex. GW170814): ')
 #triggerid = input('triggerid (ex. G298048): ')
-#propid = input('propid (ex. 2017B-0110): ')
-#triggermjd = input('triggermjd (ex. 57979.437): ')
+try:
+    propid = args.propid
+    triggermjd = args.triggermjd
+except:
+    pass
 
 print('creating .ini file with completed exposures list\n')
 
