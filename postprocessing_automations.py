@@ -249,10 +249,10 @@ edit.read(postproc_season_file)
 
 general = edit["general"]
 general["season"] = season
-general["ligoid"] = ligoid
-general["triggerid"] = triggerid
-general["propid"] = propid
-general["triggermjd"] = triggermjd
+#general["ligoid"] = ligoid
+#general["triggerid"] = triggerid
+#general["propid"] = propid
+#general["triggermjd"] = triggermjd
 general["exposures_listfile"] = exposures_listfile
 
 #editing bandslist
