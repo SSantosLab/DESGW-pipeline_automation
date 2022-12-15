@@ -309,7 +309,7 @@ os.system('mv ' + str(current_exposures) + ' ../Post-Processing')
 os.system('source ../Post-Processing/diffimg_setup.sh')
 print('running diffimg_setup.sh\n')
 
-    os.system('../Post-Processing/update_forcephoto_links.sh')
+os.system('../Post-Processing/update_forcephoto_links.sh')
     
 #run_postproc.py
 
