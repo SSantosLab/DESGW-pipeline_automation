@@ -99,8 +99,10 @@ except:
             band_only = re.sub(r"[^a-zA-Z]+", "", str(first_band_dir))
             exposure_w_band = exposure + ' ' + band_only
             exposures.append(exposure_w_band)
-    except:
+    except Exception as e: 
+        print(e)
         print('invalid exposures input')
+       
     
     print('\nExposures with bands: ' + str(exposures))
     
