@@ -1,4 +1,3 @@
-#conda activate des18a
 #source ../gw_workflow/setup_img_proc.sh
 
 export CONDA_DIR=/cvmfs/des.opensciencegrid.org/fnal/anaconda2
@@ -10,9 +9,15 @@ source $CONDA_DIR/etc/profile.d/conda.sh
 export JOBSUB_PYVER=python2.7-ucs4
 JOBSUB_PYVER=python2.7-ucs4
 
-#conda deactivate
+FILE=../gw_workflow/exposures.list
+#the -s returns true if file exists and has nonzero size
+if [ ! -s "$FILE" ]; then
+    echo "$FILE does not exist. Running ./getExposureInfo.sh..."
+    ./getExposureInfo.sh
+fi
+
 conda activate des20a
 
-python2 full_image_proc_python2.py
+python3 full_image_proc.py
 
 python3 postprocessing_automations.py
