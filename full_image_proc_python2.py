@@ -18,14 +18,103 @@ import csv
 from datetime import date
 import logging
 
-#create log file for debugging
-today = str(date.today())
 
+#introduce argparse variables to be used as parameters throughout the code
+parser = argparse.ArgumentParser(description='Set parameters for image processing.')
+parser.add_argument('--test', metavar='t', action='store',
+                    help='answers whether or not this is a test run of image processing [y/n]')
+
+parser.add_argument('--benchmark_test', metavar='tsn', action='store',
+                    help='answers whether this is a benchmark test [y/n]')
+
+parser.add_argument('--test_season', metavar='ts', action='store',
+                    help='answers whether user would like to use a test season [y/n]')
+parser.add_argument('--exp_list_location', metavar='exp', action='store',
+                    help='Necessary parameter. Input location of an exposure.list file, relative to gw_workflow (which should be located at ../gw_workflow)')
+
+
+
+parser.add_argument('--test_season_number', metavar='tsn', action='store',
+                    help='specifies test season number to be used. possible values are 2206 and 2208 (default: 2206)')
+
+parser.add_argument('--season', metavar='s', action='store',
+                    help='specifies desired season number. if "random" is input for this parameter, a suitable season number will be chosen by the system.')
+
+parser.add_argument('--RM_MYTEMP', metavar='rm', action='store',
+                    help='When true, DAGMaker will delete a pre-existing mytemp dir for the exposure and rerun. If you are running this dagmaker process again, this should be set to true in order to not confuse the pipeline. Syntax for update is [true/false]')
+
+parser.add_argument('--JOBSUB_OPTS', metavar='jo', action='store',
+                    help='Updates JOBSUB_OPTS. The default for this value likely does not need to be changed')
+
+parser.add_argument('--RESOURCES', metavar='re', action='store',
+                    help='Updates RESOURCES. The default for this value likely does not need to be changed')
+
+parser.add_argument('--IGNORECALIB', metavar='ic', action='store',
+                    help='Updates IGNORECALIB. Syntax is [true/false]')
+
+parser.add_argument('--WRITEDB', metavar='wdb', action='store',
+                    help='Updates WRITEDB. WRITEDB should be off for initial testing, but on for any production running. Syntax is [on/off].')
+
+parser.add_argument('--JOBSUB_OPTS_SE', metavar='jos', action='store',
+                    help='Updates JOBSUB_OPTS_SE. The default for this value likely does not need to be changed.')
+
+parser.add_argument('--DESTCACHE', metavar='desc', action='store',
+                    help='Updates DESTCACHE.')
+
+parser.add_argument('--TEFF_CUT_g', metavar='g', action='store',
+                    help='Updates TEFF_CUT_g.')
+
+parser.add_argument('--TEFF_CUT_i', metavar='i', action='store',
+                    help='Updates TEFF_CUT_i.')
+
+parser.add_argument('--TEFF_CUT_r', metavar='r', action='store',
+                    help='Updates TEFF_CUT_r.')
+
+parser.add_argument('--TEFF_CUT_Y', metavar='Y', action='store',
+                    help='Updates TEFF_CUT_Y.')
+
+parser.add_argument('--rnum', metavar='rn', action='store',
+                    help='specifies rnum parameter for dagmaker')
+
+parser.add_argument('--pnum', metavar='pn', action='store',
+                    help='specifies pnum parameter for dagmaker')
+
+parser.add_argument('--TEFF_CUT_z', metavar='z', action='store',
+                    help='Updates TEFF_CUT_z.')
+
+parser.add_argument('--TEFF_CUT_u', metavar='u', action='store',
+                    help='Updates TEFF_CUT_u.')
+
+parser.add_argument('--TWINDOW', metavar='twin', action='store',
+                    help='Updates TWINDOW.')
+
+parser.add_argument('--MIN_NITE', metavar='min', action='store',
+                    help='ONLY use this option if you have nothing but late-time templates. It should be commented out for standard nightly diffim running.')
+
+parser.add_argument('--MAX_NITE', metavar='max', action='store',
+                    help='Use only if you want to avoid using images taken after MAX_NITE as templates.')
+
+parser.add_argument('--DO_HEADER_CHECK', metavar='dhc', action='store',
+                    help='Turn off header check for FIELD, OBJECT, TILING if you want save time. Can do that if you have already fixed the headers elsewhere (for example when copying from DESDM)')
+parser.add_argument('--SKIP_INCOMPLETE_SE', metavar='dhc', action='store',
+                    help='updates skip_incomplete_se')
+
+
+
+args= parser.parse_args()
+
+
+
+#check if output directory exists, if it doesn't create it
 output_dir_exists = os.path.exists('./image_proc_outputs/')
 if not output_dir_exists:
         os.mkdir('./image_proc_outputs/')
 
-logging.basicConfig(filename='./image_proc_outputs/'+today+'_pipeline_automation.out', level=logging.DEBUG)
+#create log file for debugging
+today = str(date.today())
+time_now = str(time.time())
+
+logging.basicConfig(filename='./image_proc_outputs/'+today+'_'+time_now+'_pipeline_automation.out', level=logging.DEBUG)
 
 #check if gw_workflow folder exists. if it doesnt, clone it from github
 filepath = ['../gw_workflow']
@@ -37,10 +126,10 @@ else:
       git_command = ['git clone https://github.com/SSantosLab/gw_workflow.git ../gw_workflow' ]
       print('Running '+git_command[0]+'in order to clone necessary folder gw_workflow...')
       git_output = os.system(git_command[0])
-      #check if the system command will run successfully. if it does, output will be 0 with os.system. if it doesn't, raise exception. if you got this error, try manually git cloning https://github.com/SSantosLab/gw_workflow.git one folder back in a folder called gw_workflow
+    
       if git_output != 0:
+           logging.warning('There was an issue with finding and/or cloning gw_workflow. Aborting...')
            raise ValueError('Something went wrong with cloning gw_workflow. Please manually run or try again.')
-           logging.warning('There was an issue with cloning gw_workflow.')
       
 #figure out if pipeline testing suite is present. if not, clone it one folder back
 filepath = ['../DESGW-Pipeline-Testing-Suite']
@@ -53,14 +142,12 @@ else:
       print('Running '+git_command[0]+'in order to clone necessary folder DESGW-Pipeline-Testing-Suite...')
       git_output = os.system(git_command[0])
 
-#check if the system command will run successfully. if it does, output will be 0 with os.system. if it doesn't, raise exception. if you got this error, try manually git cloning https://github.com/SSantosLab/DESGW-Pipeline-Testing-Suite.git one folder back in a folder called gw_workflow
       if git_output != 0:
-            logging.debug('Something went wrong with finding and/or cloning DESGW-Pipeline-Testing-Suite. Code should stop running.')
+            logging.debug('Something went wrong with finding and/or cloning DESGW-Pipeline-Testing-Suite. Aborting...')
             raise ValueError('Something went wrong with cloning DESGW-Pipeline-Testing-Suite. Please clone it manually or try again.')
             
 #start by asking if its a test run to see if we will run the testing suite or the regular automation
-ask_test = raw_input('Is this a test run? [y/n]: ')
-answer_test = ask_test
+answer_test = str(args.test)
 bench_criteria = 0
 test_criteria = 0
 
@@ -73,23 +160,26 @@ else:
     dagmaker_file = './DAGMaker_proxyuser.sh '
     print('You are not running as desgw.')
 
-#record variables for debugging purposes. this will be repeated later as well
-pythonpath_var = os.environ['PYTHONPATH']
-path_var = os.environ['PATH']
+# #record variables for debugging purposes. this will be repeated later as well
+# pythonpath_var = os.environ['PYTHONPATH']
+# path_var = os.environ['PATH']
 
-logging.debug('Path and Python path variables before moving directories:' + pythonpath_var + path_var)
+# logging.debug('Path and Python path variables before moving directories:' + pythonpath_var + path_var)
 
 #determine if its a benchmark test, in which case some specific exposures will need to be pulled later
+
 if answer_test == 'y':
     logging.info('This run is a test. It will use the Pipeline Testing Suite.')
-    ask_bench = raw_input('Is this a benchmark test? [y/n]: ')
-    bench_answer = ask_bench
+    #ask_bench = raw_input('Is this a benchmark test? [y/n]: ')
+    #bench_answer = ask_bench
+    bench_answer = str(args.benchmark_test)
     if bench_answer == 'y':
         bench_criteria = 1
         logging.info('This is a benchmark test.')
     if bench_answer == 'n':
         test_criteria = 1
 
+# raise ValueError('finish here, line 168')
 #testing pipeline
 if test_criteria == 1:
     os.chdir('../DESGW-Pipeline-Testing-Suite')
@@ -192,13 +282,15 @@ elif test_criteria == 0:
     logging.info('Code now running in gw_workflow.')
     
     #test season numbers are 2206 and 2208
-    test_season_check = (raw_input("Would you like to use a test season number? [y/n]: "))
+    #test_season_check = (raw_input("Would you like to use a test season number? [y/n]: "))
+    test_season_check = str(args.test_season)
     test_season = test_season_check
     if test_season == ('y'):
     #         #des gw testing suite and season number 
         SEASON = 2208
     #     print('Double checking SEASON is set to 2208. If you need a different season, please restart or manually update dagmaker.rc before you enter your exposures.list file later in the code.')
-        inputted_season = (raw_input("Do you want your season to be 2206 or 2208? Enter [2206] or [2208] only, please: "))
+        #inputted_season = (raw_input("Do you want your season to be 2206, 2211, or 2208? Enter [2206], [2211] or [2208] only, please: "))
+        inputted_season = str(args.test_season_number)
         if inputted_season.isdigit():
             SEASON = int(inputted_season)
             print(SEASON)
@@ -206,9 +298,11 @@ elif test_criteria == 0:
             print('Success! Season will update to 2206.')
         elif SEASON == (2208):
             print('Success! Season will update to 2208.')
+        elif SEASON == (2211):
+            print('Success! Season will update to 2211.')
         else:
-            logging.warning('User specified that they wanted a test season number, of which there are only two (2206 and 2208). They did not pick either of those, so the code is automatically setting it to 2206.')
-            print("Error: you didn't pick 2206 or 2208. System is setting it to 2206. If you need it to be 2208, please manually update dagmaker.rc.")
+            logging.warning('User specified that they wanted a test season number, of which there are only three (2206, 2211, and 2208). They did not pick either of those, so the code is automatically setting it to 2206.')
+            print("Error: you didn't pick 2206, 2211, or 2208. System is setting it to 2206. If you need it to be 2208, please manually update dagmaker.rc.")
             SEASON = 2206
 
     elif test_season == ('n'):
@@ -236,7 +330,8 @@ elif test_criteria == 0:
         used_seasons.append(integer_value)
 
         #save the event data along with the season number 
-        inputted_season = (raw_input("Enter desired season. If you have no input in mind, enter 'random': "))
+#         inputted_season = (raw_input("Enter desired season. If you have no input in mind, enter 'random': "))
+        inputted_season = (str(args.season))
         if inputted_season.isdigit():
             SEASON = int(inputted_season)
         elif inputted_season == ('random'):
@@ -317,226 +412,226 @@ elif test_criteria == 0:
     WRITEDB= None
     list_parameters = [WRITEDB, TEFF_CUT_g, TEFF_CUT_i, TEFF_CUT_r, TEFF_CUT_Y, TEFF_CUT_z, TEFF_CUT_u, JOBSUB_OPTS, RM_MYTEMP, JOBSUB_OPTS_SE, RESOURCES, IGNORECALIB, DESTCACHE, TWINDOW, MIN_NITE, MAX_NITE, SKIP_INCOMPLETE_SE, DO_HEADER_CHECK]
 
-    def update_parameter(parameter):
+#     def update_parameter(parameter):
 
-        new_parameter_input = (raw_input("What would you like to update to? ")) 
-        new_parameter = str(new_parameter_input)
-        return new_parameter
-
-
-
-    def ask_restart():
-        j = 0
-        while j == 0:
-            restart_or_no = (raw_input('Would you like to continue to update parameters? [y/n/help] '))
-            answer_restart = restart_or_no
-            if restart_or_no == ('y'):
-                update_more = (raw_input("If you know what parameter you'd like to update, type it here. For syntax/a list of possible updates, type 'help': "))
-                update_value = update_more
-                i = 0
-                j = 1
-            elif restart_or_no == ('n'):
-                update_value = None
-                i = 1
-                j = 1
-            elif restart_or_no == ('help'):
-                update_value = 'help'
-                i = 0
-                j = 1
-            else:
-                print('Error. Please ensure you answer [y/n] when asked if you want to update values.')
-                j = 0
-
-        return {'i': i, 'update_value': update_value}
+#         new_parameter_input = (raw_input("What would you like to update to? ")) 
+#         new_parameter = str(new_parameter_input)
+#         return new_parameter
 
 
-    update_other_stuff = (raw_input("If you know a dagmaker.rc parameter you'd like to update besides season, type it here. Enter 'n' for no if you are done updating dagmaker. For syntax/a list of possible updates, type 'help'." ))
-    update = update_other_stuff 
 
-    parameters_strings = ["RM_MYTEMP, JOBSUB_OPTS, JOBSUB_OPTS_SE, RESOURCES, IGNORECALIB, DESTCACHE, TEFF_CUT_g, TEFF_CUT_i, TEFF_CUT_r, TEFF_CUT_Y, TEFF_CUT_z, TEFF_CUT_u, TWINDOW, MIN_NITE, MAX_NITE, SKIP_INCOMPLETE_SE, DO_HEADER_CHECK, WRITEDB"]
+#     def ask_restart():
+#         j = 0
+#         while j == 0:
+#             restart_or_no = (raw_input('Would you like to continue to update parameters? [y/n/help] '))
+#             answer_restart = restart_or_no
+#             if restart_or_no == ('y'):
+#                 update_more = (raw_input("If you know what parameter you'd like to update, type it here. For syntax/a list of possible updates, type 'help': "))
+#                 update_value = update_more
+#                 i = 0
+#                 j = 1
+#             elif restart_or_no == ('n'):
+#                 update_value = None
+#                 i = 1
+#                 j = 1
+#             elif restart_or_no == ('help'):
+#                 update_value = 'help'
+#                 i = 0
+#                 j = 1
+#             else:
+#                 print('Error. Please ensure you answer [y/n] when asked if you want to update values.')
+#                 j = 0
 
-    i = 0
-    while i < 1:
+#         return {'i': i, 'update_value': update_value}
 
-        if update == ('help'):
 
-            print(parameters_strings)
-            i_new = ask_restart()
-            update = i_new['update_value']
-            i = i_new['i']
+#     update_other_stuff = (raw_input("If you know a dagmaker.rc parameter you'd like to update besides season, type it here. Enter 'n' for no if you are done updating dagmaker. For syntax/a list of possible updates, type 'help'." ))
+#     update = update_other_stuff 
 
-        elif update == ('RM_MYTEMP'):
-            print('RM_MYTEMP update notes: When true, DAGMaker will delete a pre-existing mytemp dir for the exposure and rerun. If you are running this dagmaker process again, this should be set to true in order to not confuse the pipeline. Syntax for update is [true/false].')
-            RM_MYTEMP = update_parameter(RM_MYTEMP)
-            new_values_rm = ask_restart()
-            update = new_values_rm['update_value']
-            i = new_values_rm['i']      
+#     parameters_strings = ["RM_MYTEMP, JOBSUB_OPTS, JOBSUB_OPTS_SE, RESOURCES, IGNORECALIB, DESTCACHE, TEFF_CUT_g, TEFF_CUT_i, TEFF_CUT_r, TEFF_CUT_Y, TEFF_CUT_z, TEFF_CUT_u, TWINDOW, MIN_NITE, MAX_NITE, SKIP_INCOMPLETE_SE, DO_HEADER_CHECK, WRITEDB"]
 
-        elif (update == 'JOBSUB_OPTS'):
-            ask_sure = raw_input('JOBSUB_OPTS update notes: The default for this value likely does not need to be changed. Are you sure you want to proceed? [y/n]: ')
-            answer_sure = ask_sure
-            if answer_sure == 'y':
-                JOBSUB_OPTS = update_parameter(JOBSUB_OPTS)
-                new_values_jo = ask_restart()
-                update = new_values_jo['update_value']
-                i = new_values_jo['i']
-            else:
-                print('No longer updating JOBSUB_OPTS.')
-                new_values_jo = ask_restart()
-                update = new_values_jo['update_value']
-                i = new_values_jo['i']
+#     i = 0
+#     while i < 1:
 
-        elif (update == 'JOBSUB_OPTS_SE'):
-            ask_sure = raw_input('JOBSUB_OPTS_SE update notes: The default for this value likely does not need to be changed. Are you sure you want to proceed? [y/n]: ')
-            answer_sure = ask_sure
-            if answer_sure == 'y':
-                JOBSUB_OPTS_SE = update_parameter(JOBSUB_OPTS_SE)
-                new_values_jos = ask_restart()
-                update = new_values_jos['update_value']
-                i = new_values_jos['i']
-            else:
-                print('No longer updating JOBSUB_OPTS_SE.')
-                new_values_jos = ask_restart()
-                update = new_values_jos['update_value']
-                i = new_values_jos['i']
+#         if update == ('help'):
 
-        elif (update == 'RESOURCES'):
-            ask_sure = raw_input('RESOURCES update notes: The default for this value likely does not need to be changed. Are you sure you want to proceed? [y/n]: ')
-            answer_sure = ask_sure
-            if answer_sure == 'y':
-                RESOURCES = update_parameter(RESOURCES)
-                new_values_r = ask_restart()
-                update = new_values_r['update_value']
-                i = new_values_r['i']
-            else:
-                print('No longer updating RESOURCES.')
-                new_values_r = ask_restart()
-                update = new_values_r['update_value']
-                i = new_values_r['i']
+#             print(parameters_strings)
+#             i_new = ask_restart()
+#             update = i_new['update_value']
+#             i = i_new['i']
 
-        elif (update == 'IGNORECALIB'):
-            print('IGNORECALIB update note: Syntax is [true/false].')
-            IGNORECALIB = update_parameter(IGNORECALIB)
-            new_values_ic = ask_restart()
-            update = new_values_ic['update_value']
-            i = new_values_ic['i']
+#         elif update == ('RM_MYTEMP'):
+#             print('RM_MYTEMP update notes: When true, DAGMaker will delete a pre-existing mytemp dir for the exposure and rerun. If you are running this dagmaker process again, this should be set to true in order to not confuse the pipeline. Syntax for update is [true/false].')
+#             RM_MYTEMP = update_parameter(RM_MYTEMP)
+#             new_values_rm = ask_restart()
+#             update = new_values_rm['update_value']
+#             i = new_values_rm['i']      
 
-        elif (update == 'DESTCACHE'):
-            DESTCACHE = update_parameter(DESTCACHE)
-            new_values_dc = ask_restart()
-            update = new_values_dc['update_value']
-            i = new_values_dc['i']
+#         elif (update == 'JOBSUB_OPTS'):
+#             ask_sure = raw_input('JOBSUB_OPTS update notes: The default for this value likely does not need to be changed. Are you sure you want to proceed? [y/n]: ')
+#             answer_sure = ask_sure
+#             if answer_sure == 'y':
+#                 JOBSUB_OPTS = update_parameter(JOBSUB_OPTS)
+#                 new_values_jo = ask_restart()
+#                 update = new_values_jo['update_value']
+#                 i = new_values_jo['i']
+#             else:
+#                 print('No longer updating JOBSUB_OPTS.')
+#                 new_values_jo = ask_restart()
+#                 update = new_values_jo['update_value']
+#                 i = new_values_jo['i']
 
-        elif (update == 'TEFF_CUT_g'):
-            TEFF_CUT_g = update_parameter(TEFF_CUT_g)
-            new_values_tcg = ask_restart()
-            update = new_values_tcg['update_value']
-            i = new_values_tcg['i']
+#         elif (update == 'JOBSUB_OPTS_SE'):
+#             ask_sure = raw_input('JOBSUB_OPTS_SE update notes: The default for this value likely does not need to be changed. Are you sure you want to proceed? [y/n]: ')
+#             answer_sure = ask_sure
+#             if answer_sure == 'y':
+#                 JOBSUB_OPTS_SE = update_parameter(JOBSUB_OPTS_SE)
+#                 new_values_jos = ask_restart()
+#                 update = new_values_jos['update_value']
+#                 i = new_values_jos['i']
+#             else:
+#                 print('No longer updating JOBSUB_OPTS_SE.')
+#                 new_values_jos = ask_restart()
+#                 update = new_values_jos['update_value']
+#                 i = new_values_jos['i']
 
-        elif (update == 'TEFF_CUT_i'):
-            TEFF_CUT_i = update_parameter(TEFF_CUT_i)
-            new_values_tci = ask_restart()
-            update = new_values_tci['update_value']
-            i = new_values_tci['i']
+#         elif (update == 'RESOURCES'):
+#             ask_sure = raw_input('RESOURCES update notes: The default for this value likely does not need to be changed. Are you sure you want to proceed? [y/n]: ')
+#             answer_sure = ask_sure
+#             if answer_sure == 'y':
+#                 RESOURCES = update_parameter(RESOURCES)
+#                 new_values_r = ask_restart()
+#                 update = new_values_r['update_value']
+#                 i = new_values_r['i']
+#             else:
+#                 print('No longer updating RESOURCES.')
+#                 new_values_r = ask_restart()
+#                 update = new_values_r['update_value']
+#                 i = new_values_r['i']
 
-        elif (update == 'TEFF_CUT_r'):
-            TEFF_CUT_r = update_parameter(TEFF_CUT_r)
-            new_values_tcr = ask_restart()
-            update = new_values_tcr['update_value']
-            i = new_values_tcr['i']
+#         elif (update == 'IGNORECALIB'):
+#             print('IGNORECALIB update note: Syntax is [true/false].')
+#             IGNORECALIB = update_parameter(IGNORECALIB)
+#             new_values_ic = ask_restart()
+#             update = new_values_ic['update_value']
+#             i = new_values_ic['i']
 
-        elif (update == 'TEFF_CUT_Y'):
-            TEFF_CUT_Y = update_parameter(TEFF_CUT_Y)
-            new_values_tcy = ask_restart()
-            update = new_values_tcy['update_value']
-            i = new_values_tcy['i']
+#         elif (update == 'DESTCACHE'):
+#             DESTCACHE = update_parameter(DESTCACHE)
+#             new_values_dc = ask_restart()
+#             update = new_values_dc['update_value']
+#             i = new_values_dc['i']
 
-        elif (update == 'TEFF_CUT_z'):
-            TEFF_CUT_z = update_parameter(TEFF_CUT_z)
-            new_values_tcz = ask_restart()
-            update = new_values_tcz['update_value']
-            i = new_values_tcz['i']
+#         elif (update == 'TEFF_CUT_g'):
+#             TEFF_CUT_g = update_parameter(TEFF_CUT_g)
+#             new_values_tcg = ask_restart()
+#             update = new_values_tcg['update_value']
+#             i = new_values_tcg['i']
 
-        elif (update == 'TEFF_CUT_u'):
-            TEFF_CUT_u = update_parameter(TEFF_CUT_u)
-            new_values_tcu = ask_restart()
-            update = new_values_tcu['update_value']
-            i = new_values_tcu['i']
+#         elif (update == 'TEFF_CUT_i'):
+#             TEFF_CUT_i = update_parameter(TEFF_CUT_i)
+#             new_values_tci = ask_restart()
+#             update = new_values_tci['update_value']
+#             i = new_values_tci['i']
 
-        elif (update == 'TWINDOW'):
-            TWINDOW = update_parameter(TWINDOW)
-            new_values_tw = ask_restart()
-            update = new_values_tw['update_value']
-            i = new_values_tw['i']
+#         elif (update == 'TEFF_CUT_r'):
+#             TEFF_CUT_r = update_parameter(TEFF_CUT_r)
+#             new_values_tcr = ask_restart()
+#             update = new_values_tcr['update_value']
+#             i = new_values_tcr['i']
 
-        elif (update == 'MIN_NITE'):
-            print('ONLY use this option if you have nothing but late-time templates. It should be commented out for standard nightly diffim running.')
-            ask_sure = raw_input('Are you sure you want to proceed with updating MIN_NITE? [y/n]: ')
-            answer_sure = ask_sure
-            if answer_sure == 'y':
-                MIN_NITE = update_parameter(MIN_NITE)
-                new_values_min_n = ask_restart()
-                update = new_values_min_n['update_value']
-                i = new_values_min_n['i']
-            else:
-                print('No longer updating MIN_NITE.')
-                new_values_min_n = ask_restart()
-                update = new_values_min_n['update_value']
-                i = new_values_min_n['i']
+#         elif (update == 'TEFF_CUT_Y'):
+#             TEFF_CUT_Y = update_parameter(TEFF_CUT_Y)
+#             new_values_tcy = ask_restart()
+#             update = new_values_tcy['update_value']
+#             i = new_values_tcy['i']
 
-        elif (update == 'MAX_NITE'):
-            print('Use only if you want to avoid using images taken after MAX_NITE as templates.')
-            ask_sure = raw_input('Are you sure you want to proceed with updating MIN_NITE? [y/n]: ')
-            answer_sure = ask_sure
-            if answer_sure == 'y':
-                MAX_NITE = update_parameter(MAX_NITE)
-                new_values_max_n = ask_restart()
-                update = new_values_max_n['update_value']
-                i = new_values_max_n['i']
-            else:
-                print('No longer updating MAX_NITE.')
-                new_values_max_n = ask_restart()
-                update = new_values_max_n['update_value']
-                i = new_values_max_n['i']
+#         elif (update == 'TEFF_CUT_z'):
+#             TEFF_CUT_z = update_parameter(TEFF_CUT_z)
+#             new_values_tcz = ask_restart()
+#             update = new_values_tcz['update_value']
+#             i = new_values_tcz['i']
 
-        elif (update == 'SKIP_INCOMPLETE_SE'):
-            print('SKIP_INCOMPLETE_SE parameter info: Syntax is [true/false].')
-            SKIP_INCOMPLETE_SE = update_parameter(SKIP_INCOMPLETE_SE)
-            new_values_skip = ask_restart()
-            update = new_values_skip['update_value']
-            i = new_values_skip['i']
+#         elif (update == 'TEFF_CUT_u'):
+#             TEFF_CUT_u = update_parameter(TEFF_CUT_u)
+#             new_values_tcu = ask_restart()
+#             update = new_values_tcu['update_value']
+#             i = new_values_tcu['i']
 
-        elif (update == 'DO_HEADER_CHECK'):
-            print('DO_HEADER_CHECK info: Turn off header check for FIELD, OBJECT, TILING if you want save time. Can do that if you have already fixed the headers elsewhere (for example when copying from DESDM).')
-            ask_sure = raw_input('Are you sure you want to proceed with updating DO_HEADER_CHECK? [y/n]')
-            answer_sure = ask_sure
-            if answer_sure == 'y':
-                print('Syntax is [0/1].')
-                DO_HEADER_CHECK= update_parameter(DO_HEADER_CHECK)
-                new_values_header = ask_restart()
-                update = new_values_header['update_value']
-                i = new_values_header['i']
-            else:
-                print('No longer updating DO_HEADER_CHECK.')
-                new_values_header = ask_restart()
-                update = new_values_header['update_value']
-                i = new_values_header['i']
+#         elif (update == 'TWINDOW'):
+#             TWINDOW = update_parameter(TWINDOW)
+#             new_values_tw = ask_restart()
+#             update = new_values_tw['update_value']
+#             i = new_values_tw['i']
 
-        elif (update == 'WRITEDB'):
-            print('WRITEDB info: WRITEDB should be off for initial testing, but on for any production running. Syntax is [on/off].')
-            WRITEDB = update_parameter(WRITEDB)
-            new_values_db = ask_restart()
-            update = new_values_db['update_value']
-            i = new_values_db['i']
+#         elif (update == 'MIN_NITE'):
+#             print('ONLY use this option if you have nothing but late-time templates. It should be commented out for standard nightly diffim running.')
+#             ask_sure = raw_input('Are you sure you want to proceed with updating MIN_NITE? [y/n]: ')
+#             answer_sure = ask_sure
+#             if answer_sure == 'y':
+#                 MIN_NITE = update_parameter(MIN_NITE)
+#                 new_values_min_n = ask_restart()
+#                 update = new_values_min_n['update_value']
+#                 i = new_values_min_n['i']
+#             else:
+#                 print('No longer updating MIN_NITE.')
+#                 new_values_min_n = ask_restart()
+#                 update = new_values_min_n['update_value']
+#                 i = new_values_min_n['i']
 
-        elif update == ('n'):
-            i=1
+#         elif (update == 'MAX_NITE'):
+#             print('Use only if you want to avoid using images taken after MAX_NITE as templates.')
+#             ask_sure = raw_input('Are you sure you want to proceed with updating MIN_NITE? [y/n]: ')
+#             answer_sure = ask_sure
+#             if answer_sure == 'y':
+#                 MAX_NITE = update_parameter(MAX_NITE)
+#                 new_values_max_n = ask_restart()
+#                 update = new_values_max_n['update_value']
+#                 i = new_values_max_n['i']
+#             else:
+#                 print('No longer updating MAX_NITE.')
+#                 new_values_max_n = ask_restart()
+#                 update = new_values_max_n['update_value']
+#                 i = new_values_max_n['i']
 
-        else:
-            print('Error. Value/parameter not recognized. Please enter a value, and type help when prompted if you need syntax help.')
-            new_values_error = ask_restart()
-            update = new_values_error['update_value']
-            i = new_values_error['i']
+#         elif (update == 'SKIP_INCOMPLETE_SE'):
+#             print('SKIP_INCOMPLETE_SE parameter info: Syntax is [true/false].')
+#             SKIP_INCOMPLETE_SE = update_parameter(SKIP_INCOMPLETE_SE)
+#             new_values_skip = ask_restart()
+#             update = new_values_skip['update_value']
+#             i = new_values_skip['i']
+
+#         elif (update == 'DO_HEADER_CHECK'):
+#             print('DO_HEADER_CHECK info: Turn off header check for FIELD, OBJECT, TILING if you want save time. Can do that if you have already fixed the headers elsewhere (for example when copying from DESDM).')
+#             ask_sure = raw_input('Are you sure you want to proceed with updating DO_HEADER_CHECK? [y/n]')
+#             answer_sure = ask_sure
+#             if answer_sure == 'y':
+#                 print('Syntax is [0/1].')
+#                 DO_HEADER_CHECK= update_parameter(DO_HEADER_CHECK)
+#                 new_values_header = ask_restart()
+#                 update = new_values_header['update_value']
+#                 i = new_values_header['i']
+#             else:
+#                 print('No longer updating DO_HEADER_CHECK.')
+#                 new_values_header = ask_restart()
+#                 update = new_values_header['update_value']
+#                 i = new_values_header['i']
+
+#         elif (update == 'WRITEDB'):
+#             print('WRITEDB info: WRITEDB should be off for initial testing, but on for any production running. Syntax is [on/off].')
+#             WRITEDB = update_parameter(WRITEDB)
+#             new_values_db = ask_restart()
+#             update = new_values_db['update_value']
+#             i = new_values_db['i']
+
+#         elif update == ('n'):
+#             i=1
+
+#         else:
+#             print('Error. Value/parameter not recognized. Please enter a value, and type help when prompted if you need syntax help.')
+#             new_values_error = ask_restart()
+#             update = new_values_error['update_value']
+#             i = new_values_error['i']
 
 
 
@@ -560,62 +655,78 @@ elif test_criteria == 0:
     print (data[18])
 
 
-    if  RM_MYTEMP != (None):
+    if  args.RM_MYTEMP != (None):
         rm_line = ()
         for index, line in enumerate(data):
             if line.startswith('RM_MYTEMP='):
                 rm_line = int(index)
                 print('Line '+line+'changed to:')
-        data[rm_line] = 'RM_MYTEMP='+RM_MYTEMP+'\n'
+        data[rm_line] = 'RM_MYTEMP='+str(args.RM_MYTEMP)+'\n'
         print(data[rm_line])
 
-    if  MAX_NITE != (None):
+    if  (args.MAX_NITE) != (None):
         mn_line = ()
         for index, line in enumerate(data):
             if ('MAX_NITE=') in line:
                 mn_line = int(index)
                 print('Line '+line+'changed to:')
-        data[mn_line] = 'MAX_NITE='+MAX_NITE+'\n'
+        data[mn_line] = 'MAX_NITE='+str(args.MAX_NITE)+'\n'
         print(data[mn_line])
 
-    if  MIN_NITE != (None):
+    if  (args.MIN_NITE) != (None):
         mi_line = ()
         for index, line in enumerate(data):
             if ('MAX_NITE=') in line:
                 mi_line = int(index)
                 print('Line '+line+'changed to:')
-        data[mi_line] = 'MIN_NITE='+MIN_NITE+'\n'
+        data[mi_line] = 'MIN_NITE='+str(args.MIN_NITE)+'\n'
         print(data[mi_line])
+        
+    if  (args.pnum) != (None):
+        job_line = ()
+        for index, line in enumerate(data):
+            if line.startswith('PNUM='):
+                job_line = int(index)
+                print('Line '+line+'updated to:')
+        data[job_line] = 'PNUM='+str(args.pnum)+'\n'
+        print(data[job_line])
+    if  (args.rnum) != (None):
+        job_line = ()
+        for index, line in enumerate(data):
+            if line.startswith('RNUM='):
+                job_line = int(index)
+                print('Line '+line+'updated to:')
+        data[job_line] = 'RNUM='+str(args.rnum)+'\n'
+        print(data[job_line])
 
-
-    if  JOBSUB_OPTS != (None):
+    if  (args.JOBSUB_OPTS) != (None):
         job_line = ()
         for index, line in enumerate(data):
             if line.startswith('JOBSUB_OPTS='):
                 job_line = int(index)
                 print('Line '+line+'updated to:')
-        data[job_line] = 'JOBSUB_OPTS='+JOBSUB_OPTS+'\n'
+        data[job_line] = 'JOBSUB_OPTS='+str(args.JOBSUB_OPTS)+'\n'
         print(data[job_line])
 
-    if  JOBSUB_OPTS_SE != (None):
+    if  (args.JOBSUB_OPTS_SE) != (None):
         jobse_line = ()
         for index, line in enumerate(data):
             if line.startswith('JOBSUB_OPTS_SE='):
                 jobse_line = int(index)
                 print('Line '+line+'updated to:')
-        data[jobse_line] = 'JOBSUB_OPTS_SE='+JOBSUB_OPTS_SE+'\n'
+        data[jobse_line] = 'JOBSUB_OPTS_SE='+str(args.JOBSUB_OPTS_SE)+'\n'
         print(data[jobse_line])
 
-    if  WRITEDB != (None):
+    if  (args.WRITEDB) != (None):
         db_line = ()
         for index, line in enumerate(data):
             if line.startswith('WRITEDB='):
                 db_line = int(index)
                 print('Line '+line+'updated to:')
-        data[db_line] = 'WRITEDB='+WRITEDB+'\n'
+        data[db_line] = 'WRITEDB='+str(args.WRITEDB)+'\n'
         print(data[db_line])
 
-    if  RESOURCES != (None):
+    if  (args.RESOURCES) != (None):
         r_line = ()
         for index, line in enumerate(data):
             if line.startswith('RESOURCES='):
@@ -624,104 +735,104 @@ elif test_criteria == 0:
         data[r_line] = 'RESOURCES='+RESOURCES+'\n'
         print(data[r_line])
 
-    if  IGNORECALIB != (None):
+    if  (args.IGNORECALIB) != (None):
         i_index = ()
         for index, line in enumerate(data):
             if line.startswith('IGNORECALIB='):
                 i_index = int(index)
                 print('Line '+line+'updated to:')
-        data[i_index] = 'IGNORECALIB='+IGNORECALIB+'\n'
+        data[i_index] = 'IGNORECALIB='+str(args.IGNORECALIB)+'\n'
         print(data[i_index])
 
-    if  DESTCACHE != (None):
+    if  (args.DESTCACHE) != (None):
         d_index = ()
         for index, line in enumerate(data):
             if line.startswith('DESTCACHE='):
                 d_index = int(index)
                 print('Line '+line+'updated to:')
-        data[d_index] = 'DESTCACHE='+DESTCACHE+'\n'
+        data[d_index] = 'DESTCACHE='+str(args.DESTCACHE)+'\n'
         print(data[d_index])
 
-    if  TWINDOW != (None):
+    if (args.TWINDOW) != (None):
         t_index = ()
         for index, line in enumerate(data):
             if line.startswith('TWINDOW='):
                 t_index = int(index)
                 print('Line '+line+'updated to:')
-        data[t_index] = 'TWINDOW='+TWINDOW+'\n'
+        data[t_index] = 'TWINDOW='+str(args.TWINDOW)+'\n'
         print(data[t_index])
 
 
-    if  SKIP_INCOMPLETE_SE != (None):
+    if  (args.SKIP_INCOMPLETE_SE) != (None):
         se_index = ()
         for index, line in enumerate(data):
             if line.startswith('SKIP_INCOMPLETE_SE='):
                 se_index = int(index)
                 print('Line '+line+'updated to:')
-        data[se_index] = 'SKIP_INCOMPLETE_SE='+SKIP_INCOMPLETE_SE+'\n'
+        data[se_index] = 'SKIP_INCOMPLETE_SE='+str(args.SKIP_INCOMPLETE_SE)+'\n'
         print(data[se_index])    
 
-    if  DO_HEADER_CHECK != (None):
+    if  (args.DO_HEADER_CHECK) != (None):
         head_index = ()
         for index, line in enumerate(data):
             if line.startswith('DO_HEADER_CHECK='):
                 head_index = int(index)
                 print('Line '+line+'updated to:')
-        data[head_index] = 'DO_HEADER_CHECK='+DO_HEADER_CHECK+'\n'
+        data[head_index] = 'DO_HEADER_CHECK='+str(args.DO_HEADER_CHECK)+'\n'
         print(data[head_index])     
 
-    if  TEFF_CUT_g != (None):
+    if  (args.TEFF_CUT_g) != (None):
         tg_index = ()
         for index, line in enumerate(data):
             if line.startswith('TEFF_CUT_g='):
                 tg_index = int(index)
                 print('Line '+line+'updated to:')
-        data[tg_index] = 'TEFF_CUT_g='+TEFF_CUT_g+'\n'
+        data[tg_index] = 'TEFF_CUT_g='+str(args.TEFF_CUT_g)+'\n'
         print(data[tg_index])   
 
-    if  TEFF_CUT_i != (None):
+    if  (args.TEFF_CUT_i) != (None):
         ti_index = ()
         for index, line in enumerate(data):
             if line.startswith('TEFF_CUT_i='):
                 ti_index = int(index)
                 print('Line '+line+'updated to:')
-        data[ti_index] = 'TEFF_CUT_i='+TEFF_CUT_i+'\n'
+        data[ti_index] = 'TEFF_CUT_i='+str(args.TEFF_CUT_i)+'\n'
         print(data[ti_index])
 
-    if  TEFF_CUT_r != (None):
+    if  (args.TEFF_CUT_r) != (None):
         tr_index = ()
         for index, line in enumerate(data):
             if line.startswith('TEFF_CUT_r='):
                 tr_index = int(index)
                 print('Line '+line+'updated to:')
-        data[tr_index] = 'TEFF_CUT_r='+TEFF_CUT_r+'\n'
+        data[tr_index] = 'TEFF_CUT_r='+str(args.TEFF_CUT_r)+'\n'
         print(data[tr_index])
 
-    if  TEFF_CUT_Y != (None):
+    if  (args.TEFF_CUT_Y) != (None):
         ty_index = ()
         for index, line in enumerate(data):
             if line.startswith('TEFF_CUT_Y='):
                 ty_index = int(index)
                 print('Line '+line+'updated to:')
-        data[ty_index] = 'TEFF_CUT_Y='+TEFF_CUT_Y+'\n'
+        data[ty_index] = 'TEFF_CUT_Y='+str(args.TEFF_CUT_Y)+'\n'
         print(data[ty_index])
 
-    if  TEFF_CUT_z != (None):
+    if  (args.TEFF_CUT_z) != (None):
         tz_index = ()
         for index, line in enumerate(data):
             if line.startswith('TEFF_CUT_z='):
                 tz_index = int(index)
                 print('Line '+line+'updated to:')
-        data[tz_index] = 'TEFF_CUT_z='+TEFF_CUT_z +'\n'
+        data[tz_index] = 'TEFF_CUT_z='+str(args.TEFF_CUT_z) +'\n'
         print(data[tz_index])
 
-    if  TEFF_CUT_u != (None):
+    if  (args.TEFF_CUT_u) != (None):
         tu_index = ()
         for index, line in enumerate(data):
             if line.startswith('TEFF_CUT_u='):
                 tu_index = int(index)
                 print('Line '+line+'updated to:')
-        data[tu_index] = 'TEFF_CUT_u='+TEFF_CUT_u+'\n'
+        data[tu_index] = 'TEFF_CUT_u='+str(args.TEFF_CUT_u)+'\n'
         print(data[tu_index])
 
 
@@ -816,8 +927,10 @@ elif test_criteria == 0:
     if bench_criteria:
         print("We haven't made the benchmark test exp list yet. This is a placeholder.")
         
-    inputted_exp_list = (raw_input("Please input the filepath to your exp.list file, relative to gw_workflow or as a full path: "))
+#     inputted_exp_list = (raw_input("Please input the filepath to your exp.list file, relative to gw_workflow or as a full path: "))
+    inputted_exp_list = str(args.exp_list_location)
         
+    i=0    
     while i < 1:
         isExist = os.path.exists(inputted_exp_list)
 
@@ -829,10 +942,10 @@ elif test_criteria == 0:
 
 
         else:
+                i=1
+            #inputted_exp_list = (raw_input("Please input the filepath to your exp.list file, relative to gw_workflow or as a full path: "))
 
-            inputted_exp_list = (raw_input("Please input the filepath to your exp.list file, relative to gw_workflow or as a full path: "))
-
-            isExist = os.path.exists(inputted_exp_list)
+            #isExist = os.path.exists(inputted_exp_list)
 
     #         subprocess.check_output(new_command[0], stderr=subprocess.STDOUT)
 
@@ -945,8 +1058,8 @@ elif test_criteria == 0:
 #         path_find_list = sys.path
 #         logging.warning(f'System was missing the path to pycurl. The code attempted to correct this with the following reflection on its path: {path_find_list}')
         
-    pythonpath_var = os.environ['PYTHONPATH']
-    path_var = os.environ['PATH']
+#     pythonpath_var = os.environ['PYTHONPATH']
+#     path_var = os.environ['PATH']
 
     #logging.debug(f'Path and Python path variables before running multiproc: {pythonpath_var} {path_var}')
     
@@ -959,10 +1072,10 @@ elif test_criteria == 0:
     finish_time = str((time.time() - start_time_multiproc)/60)
     print('Finished with dag creation and submission. Multiprocessing took '+finish_time+' minutes.')
 
-    pythonpath_var = os.environ['PYTHONPATH']
-    path_var = os.environ['PATH']
+#     pythonpath_var = os.environ['PYTHONPATH']
+#     path_var = os.environ['PATH']
 
-    logging.debug('Path and Python path variables after running multiproc: PYTHONPATH: ' + pythonpath_var + 'PATH: ' + path_var)
+#     logging.debug('Path and Python path variables after running multiproc: PYTHONPATH: ' + pythonpath_var + 'PATH: ' + path_var)
     #exp_info is your list with (exp_num band, exp_num band), other_info is the nite and other info that i will get from dagmaker upon combining codes
 
     print('Image processing completed.')
