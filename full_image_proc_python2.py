@@ -21,18 +21,11 @@ import logging
 
 #introduce argparse variables to be used as parameters throughout the code
 parser = argparse.ArgumentParser(description='Set parameters for image processing.')
-parser.add_argument('--test', metavar='t', action='store',
-                    help='answers whether or not this is a test run of image processing [y/n]')
-
-parser.add_argument('--benchmark_test', metavar='tsn', action='store',
-                    help='answers whether this is a benchmark test [y/n]')
 
 parser.add_argument('--test_season', metavar='ts', action='store',
                     help='answers whether user would like to use a test season [y/n]')
 parser.add_argument('--exp_list_location', metavar='exp', action='store',
                     help='Necessary parameter. Input location of an exposure.list file, relative to gw_workflow (which should be located at ../gw_workflow)')
-
-
 
 parser.add_argument('--test_season_number', metavar='tsn', action='store',
                     help='specifies test season number to be used. possible values are 2206 and 2208 (default: 2206)')
@@ -73,11 +66,11 @@ parser.add_argument('--TEFF_CUT_r', metavar='r', action='store',
 parser.add_argument('--TEFF_CUT_Y', metavar='Y', action='store',
                     help='Updates TEFF_CUT_Y.')
 
-parser.add_argument('--rnum', metavar='rn', action='store',
-                    help='specifies rnum parameter for dagmaker')
+parser.add_argument('--RNUM', metavar='rn', action='store',
+                    help='Specifies rnum parameter for dagmaker')
 
-parser.add_argument('--pnum', metavar='pn', action='store',
-                    help='specifies pnum parameter for dagmaker')
+parser.add_argument('--PNUM', metavar='pn', action='store',
+                    help='Specifies pnum parameter for dagmaker')
 
 parser.add_argument('--TEFF_CUT_z', metavar='z', action='store',
                     help='Updates TEFF_CUT_z.')
@@ -96,14 +89,12 @@ parser.add_argument('--MAX_NITE', metavar='max', action='store',
 
 parser.add_argument('--DO_HEADER_CHECK', metavar='dhc', action='store',
                     help='Turn off header check for FIELD, OBJECT, TILING if you want save time. Can do that if you have already fixed the headers elsewhere (for example when copying from DESDM)')
+
 parser.add_argument('--SKIP_INCOMPLETE_SE', metavar='dhc', action='store',
                     help='updates skip_incomplete_se')
 
-
-
+#parse arguments so each can be called as a variable with args.name
 args= parser.parse_args()
-
-
 
 #check if output directory exists, if it doesn't create it
 output_dir_exists = os.path.exists('./image_proc_outputs/')
@@ -131,27 +122,22 @@ else:
            logging.warning('There was an issue with finding and/or cloning gw_workflow. Aborting...')
            raise ValueError('Something went wrong with cloning gw_workflow. Please manually run or try again.')
       
-#figure out if pipeline testing suite is present. if not, clone it one folder back
-filepath = ['../DESGW-Pipeline-Testing-Suite']
-isExist = os.path.exists(filepath[0])
-if isExist:
-      print('Pipeline testing suite found.')
-else:
-      logging.debug('Pipeline testing suite not found. Code is cloning it at ../DESGW-Pipeline-Testing-Suite')
-      git_command = ['git clone https://github.com/SSantosLab/DESGW-Pipeline-Testing-Suite.git ../DESGW-Pipeline-Testing-Suite' ]
-      print('Running '+git_command[0]+'in order to clone necessary folder DESGW-Pipeline-Testing-Suite...')
-      git_output = os.system(git_command[0])
+# figure out if pipeline testing suite is present. if not, clone it one folder back
+# filepath = ['../DESGW-Pipeline-Testing-Suite']
+# isExist = os.path.exists(filepath[0])
+# if isExist:
+#       print('Pipeline testing suite found.')
+# else:
+#       logging.debug('Pipeline testing suite not found. Code is cloning it at ../DESGW-Pipeline-Testing-Suite')
+#       git_command = ['git clone https://github.com/SSantosLab/DESGW-Pipeline-Testing-Suite.git ../DESGW-Pipeline-Testing-Suite' ]
+#       print('Running '+git_command[0]+'in order to clone necessary folder DESGW-Pipeline-Testing-Suite...')
+#       git_output = os.system(git_command[0])
 
-      if git_output != 0:
-            logging.debug('Something went wrong with finding and/or cloning DESGW-Pipeline-Testing-Suite. Aborting...')
-            raise ValueError('Something went wrong with cloning DESGW-Pipeline-Testing-Suite. Please clone it manually or try again.')
+#       if git_output != 0:
+#             logging.debug('Something went wrong with finding and/or cloning DESGW-Pipeline-Testing-Suite. Aborting...')
+#             raise ValueError('Something went wrong with cloning DESGW-Pipeline-Testing-Suite. Please clone it manually or try again.')
             
-#start by asking if its a test run to see if we will run the testing suite or the regular automation
-answer_test = str(args.test)
-bench_criteria = 0
-test_criteria = 0
-
-#set path variables, essentially replacing the sourcing of the two .sh files since that occurs in a subshell not accessible by the code
+#check if user is running as desgw or through a proxy
 USER = os.getenv('USER')
 if USER == 'desgw':
     dagmaker_file = './DAGMaker.sh '
@@ -160,257 +146,143 @@ else:
     dagmaker_file = './DAGMaker_proxyuser.sh '
     print('You are not running as desgw.')
 
-# #record variables for debugging purposes. this will be repeated later as well
-# pythonpath_var = os.environ['PYTHONPATH']
-# path_var = os.environ['PATH']
-
-# logging.debug('Path and Python path variables before moving directories:' + pythonpath_var + path_var)
-
-#determine if its a benchmark test, in which case some specific exposures will need to be pulled later
-
-if answer_test == 'y':
-    logging.info('This run is a test. It will use the Pipeline Testing Suite.')
-    #ask_bench = raw_input('Is this a benchmark test? [y/n]: ')
-    #bench_answer = ask_bench
-    bench_answer = str(args.benchmark_test)
-    if bench_answer == 'y':
-        bench_criteria = 1
-        logging.info('This is a benchmark test.')
-    if bench_answer == 'n':
-        test_criteria = 1
-
-# raise ValueError('finish here, line 168')
-#testing pipeline
-if test_criteria == 1:
-    os.chdir('../DESGW-Pipeline-Testing-Suite')
-    
-    command = ['python configure_dag.py']
-#             command = ['pwd']
             
-    logging.info('Code now running from DESGW-Pipeline-Testing-Suite...')
-    print("Running " + command[0])
-    error_dag = 0
-    process = subprocess.Popen(command[0], bufsize=1, shell=True, universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    stdout, stderr = process.communicate()
-#     print(stdout)
-    f = open('configure_dagmaker_errors.out', 'w')
-    f.write(stdout)
-    if stderr != None:
-          logging.warning('Potential errors found while running configure_dag.py. For more information, see configure_dagmaker_errors.out file')
-          f.write(stderr)
-          error_dag = 1
-    f.close()
-    
-    if error_dag == 1:
-        continue_question = raw_input('Warning: there was an error with configure_dag.py. Please check the configure_dagmaker_errors.out file for information, then decide if you would like to continue the testing pipeline by answering [y/n]: ')
-        continue_answer = continue_question
-        if continue_answer == 'n':
-            logging.debug('User terminated program due to errors with configure_dag.py.')
-            print('Terminating this program.')
-            sys.exit()
-            
-        else:
-            print('Program continuing.')
-            
-    
-    print('Retrieving season in order to run gw_workflow.py...')
-    filepath = 'dagmaker.rc'
+#changing directory because this code needs to run in gw_workflow
+os.chdir('../gw_workflow')
+logging.info('Code now running in gw_workflow.')
 
+#test season numbers are 2206 and 2208
+#test_season_check = (raw_input("Would you like to use a test season number? [y/n]: "))
+test_season_check = str(args.test_season)
+test_season = test_season_check
 
-    with open(filepath, 'r') as file:
-        data = file.readlines()
-#     print(data[3])
-    line = data[3]
-    if line.endswith('\n'):
-          line_new = line[:-len('\n')]
-    if line_new.startswith('SEASON='):
-          line_fixed = line[len('SEASON='):]
-    season = int(line_fixed)
-#     print(season)
-
-#get the season from the list as numbers
-    
-    gw_command = ['python3 run_gw_workflow.py --exp_list '+season+'exposures.list']
-    print("Running " + gw_command[0])
-    error_gw = 0
-    process = subprocess.Popen(gw_command[0], bufsize=1, shell=True, universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    stdout, stderr = process.communicate()
-    f = open('run_gw_workflow_errors.out', 'w')
-    f.write(stdout)
-    if stderr != None:
-          f.write(stderr)
-          logging.warning('Potential errors found while running run_gw_workflow.py. For more information, see run_gw_workflow_errors.out file')
-          error_gw = 1
-    f.close()
-    
-    if error_gw == 1:
-        continue_question = raw_input('Warning: there was an error with run gw_workflow.py. Please check the run_gw_workflow_errors.out file for information, then decide if you would like to continue the testing pipeline by answering [y/n]: ')
-        continue_answer = continue_question
-        if continue_answer == 'n':
-            print('Terminating this program.')
-            logging.debug('User terminated program due to errors with run gw_workflow.py.')
-            sys.exit()
-            
-    js_command = ['python3 fetchJobSubStats.py --season '+season+' --exp_list {season}exposures.list']
-    print("Running " + js_command[0])
-    error_js = 0
-    process = subprocess.Popen(js_command[0], bufsize=1, shell=True, universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    stdout, stderr = process.communicate()
-    f = open('fetchJobSubStats_errors.out', 'w')
-    f.write(stdout)
-    if stderr != None:
-          f.write(stderr)
-          error_js = 1
-    f.close()
-    
-    if error_js == 1:
-        logging.warning('Potential errors found while running fetchJobSubStats.py. For more information, see fetchJobSubStats_errors.out file')
-        continue_question2 = raw_input('Warning: there was an error with fetchJobSubStats.py. Please check the fetchJobSubStats_errors.out file for information, then decide if you would like to continue the testing pipeline by answering [y/n]: ')
-        continue_answer2 = continue_question2
-        if continue_answer2 == 'n':
-            print('Terminating this program.')
-            logging.debug('User terminated program due to errors with fetchJobSubStats.py.')
-            sys.exit()
-    
-            
-#regular pipeline
-elif test_criteria == 0:
-
-            
-    #changing directory because needs to run in gw_workflow
-    os.chdir('../gw_workflow')
-    logging.info('Code now running in gw_workflow.')
-    
-    #test season numbers are 2206 and 2208
-    #test_season_check = (raw_input("Would you like to use a test season number? [y/n]: "))
-    test_season_check = str(args.test_season)
-    test_season = test_season_check
-    if test_season == ('y'):
-    #         #des gw testing suite and season number 
+#if using a test season number, set it as a default of 2208. it can also be updated to one of the other test season numbers, 2206, 2208, or 2211
+if test_season == ('y'):
+    SEASON = 2208
+#     print('Double checking SEASON is set to 2208. If you need a different season, please restart or manually update dagmaker.rc before you enter your exposures.list file later in the code.')
+    #inputted_season = (raw_input("Do you want your season to be 2206, 2211, or 2208? Enter [2206], [2211] or [2208] only, please: "))
+    inputted_season = str(args.test_season_number)
+    if inputted_season.isdigit():
+        SEASON = int(inputted_season)
+        print(SEASON)
+    if SEASON == (2206):
+        print('Success! Season will update to 2206.')
+    elif SEASON == (2208):
+        print('Success! Season will update to 2208.')
+    elif SEASON == (2211):
+        print('Success! Season will update to 2211.')
+    else:
+        logging.warning('User specified that they wanted a test season number, of which there are only three (2206, 2211, and 2208). They did not pick either of those, so the code is automatically setting it to 2208.')
+        print("Error: you didn't pick 2206, 2211, or 2208. System is setting it to 2208. If you need it to be something else, please manually update dagmaker.rc.")
         SEASON = 2208
-    #     print('Double checking SEASON is set to 2208. If you need a different season, please restart or manually update dagmaker.rc before you enter your exposures.list file later in the code.')
-        #inputted_season = (raw_input("Do you want your season to be 2206, 2211, or 2208? Enter [2206], [2211] or [2208] only, please: "))
-        inputted_season = str(args.test_season_number)
-        if inputted_season.isdigit():
-            SEASON = int(inputted_season)
-            print(SEASON)
-        if SEASON == (2206):
-            print('Success! Season will update to 2206.')
-        elif SEASON == (2208):
-            print('Success! Season will update to 2208.')
-        elif SEASON == (2211):
-            print('Success! Season will update to 2211.')
-        else:
-            logging.warning('User specified that they wanted a test season number, of which there are only three (2206, 2211, and 2208). They did not pick either of those, so the code is automatically setting it to 2206.')
-            print("Error: you didn't pick 2206, 2211, or 2208. System is setting it to 2206. If you need it to be 2208, please manually update dagmaker.rc.")
-            SEASON = 2206
 
-    elif test_season == ('n'):
-        #query the system so that we can tell what seasons are used
-        query = """select distinct season from MARCELLE.SNAUTOSCAN union select distinct season from MARCELLE.SNAUTOSCAN_SAVE union select distinct season from MARCELLE.SNCAND union select distinct season from MARCELLE.SNFAKEIMG union select distinct season from MARCELLE.SNFAKEMATCH union select distinct season from MARCELLE.SNFORCE union select distinct season from MARCELLE.SNOBS union select distinct season from MARCELLE.SNOBSINFO union select distinct season from MARCELLE.SNOBS_SAVE union select distinct season from MARCELLE.SNSCAN ;""" 
+#if not using a test season number, check and make sure the inputted season works
+elif test_season == ('n'):
+    #query the system so that we can tell what seasons are used
+    query = """select distinct season from MARCELLE.SNAUTOSCAN union select distinct season from MARCELLE.SNAUTOSCAN_SAVE union select distinct season from MARCELLE.SNCAND union select distinct season from MARCELLE.SNFAKEIMG union select distinct season from MARCELLE.SNFAKEMATCH union select distinct season from MARCELLE.SNFORCE union select distinct season from MARCELLE.SNOBS union select distinct season from MARCELLE.SNOBSINFO union select distinct season from MARCELLE.SNOBS_SAVE union select distinct season from MARCELLE.SNSCAN ;""" 
 
-        print('Querying the database for used season numbers...')
-        DF=ea.connect('dessci').query_to_pandas(query)
-        print('Query complete.')
+    print('Querying the database for used season numbers...')
+    DF=ea.connect('dessci').query_to_pandas(query)
+    print('Query complete.')
 
-        seasons = DF['SEASON']
-        used_seasons = []
-        a_list = list(range(1, 100))
-        used_seasons.append(5000)
-        used_seasons.append(6000)
+    seasons = DF['SEASON']
+    used_seasons = []
+    a_list = list(range(1, 100))
+    used_seasons.append(5000)
+    used_seasons.append(6000)
 
-        for number in a_list:
-            used_seasons.append(number)
+    for number in a_list:
+        used_seasons.append(number)
 
-        for i in seasons:
-            if i.is_integer():
-                integer_value = int(i)
-        else:
-            integer_value = 0
-        used_seasons.append(integer_value)
+    for i in seasons:
+        if i.is_integer():
+            integer_value = int(i)
+    else:
+        integer_value = 0
+    used_seasons.append(integer_value)
 
-        #save the event data along with the season number 
+    #save the event data along with the season number 
 #         inputted_season = (raw_input("Enter desired season. If you have no input in mind, enter 'random': "))
-        inputted_season = (str(args.season))
-        if inputted_season.isdigit():
-            SEASON = int(inputted_season)
-        elif inputted_season == ('random'):
-            SEASON = 'random'
-        else:
-            raise Exception('Please make sure you have inputted a number or the word "random".')
+    inputted_season = (str(args.season))
+    if inputted_season.isdigit():
+        SEASON = int(inputted_season)
+    elif inputted_season == ('random'):
+        SEASON = 'random'
+    else:
+        raise Exception('Please make sure you have inputted a number or the word "random".')
 
-        #for new data, start with asking for a user input of desired season. then check if season is redundant
-        i = 0
-        while i < 1: 
+    #for new data, start with asking for a user input of desired season. then check if season is redundant
+    i = 0
+    while i < 1: 
 
-            print('Checking if season number is redundant...')
+        print('Checking if season number is redundant...')
 
-            if SEASON == ('random'):
-                SEASON = random.randint(100, 10000)
-                i = 0
+        if SEASON == ('random'):
+            SEASON = random.randint(100, 10000)
+            i = 0
 
-            elif int(SEASON) in used_seasons:                         
-                answer = (raw_input("Input matches previously used value. Proceeding with this Season input will overwrite previous files. Would you like to keep this input and overwrite previous files? [y/n]: "))
-                answer_input = answer
+        elif int(SEASON) in used_seasons:                         
+            answer = (raw_input("Input matches previously used value. Proceeding with this Season input will overwrite previous files. Would you like to keep this input and overwrite previous files? [y/n]: "))
+            answer_input = answer
 
-                if answer_input == ('y'):
-                    answer_input_2 = (raw_input("Are you SURE you want to overwrite previous values and continue with this number? [y/n]: "))
-                    answer_2 = answer_input_2
-                    if answer_2 == ('y'):
-                        new_season = (raw_input("YOU CAn'T OVERWRITE pRevIouS FILeS!!!! Pick a new number."))
-                        new_value = int(new_season)
-                        SEASON = new_value
-                        i = 0   
+            if answer_input == ('y'):
+                answer_input_2 = (raw_input("Are you SURE you want to overwrite previous values and continue with this number? [y/n]: "))
+                answer_2 = answer_input_2
+                if answer_2 == ('y'):
+                    new_season = (raw_input("YOU CAn'T OVERWRITE pRevIouS FILeS!!!! Pick a new number."))
+                    new_value = int(new_season)
+                    SEASON = new_value
+                    i = 0   
 
-                    else:
-                        new_season = (raw_input("Please enter a new value for SEASON:"))
-                        new_value = int(new_season)
-                        SEASON = new_value
-                        i = 0        
-                elif answer_input != ('n'):  
+                else:
                     new_season = (raw_input("Please enter a new value for SEASON:"))
                     new_value = int(new_season)
                     SEASON = new_value
-                    i=0
-                else:
-                    new_input = raw_input("Please enter a new value for SEASON:")
-                    SEASON = new_input
-                    i = 0
-
-            elif SEASON not in used_seasons:
-                print("Input accepted. SEASON = ", SEASON)
-                i = 1
-
+                    i = 0        
+            elif answer_input != ('n'):  
+                new_season = (raw_input("Please enter a new value for SEASON:"))
+                new_value = int(new_season)
+                SEASON = new_value
+                i=0
             else:
-                raise ERROR("Something's gone wrong. Please restart and input a new season number.")
-                logging.debug('Something went wrong with choosing a unique season value.')
+                new_input = raw_input("Please enter a new value for SEASON:")
+                SEASON = new_input
+                i = 0
 
-    else:
-        raise Exception('Please restart and enter [y/n]. ')
+        elif SEASON not in used_seasons:
+            print("Input accepted. SEASON = ", SEASON)
+            i = 1
+
+        else:
+            raise ERROR("Something's gone wrong. Please restart and input a new season number.")
+            logging.debug('Something went wrong with choosing a unique season value.')
+
+else:
+    raise Exception('Please restart and enter [y/n]. ')
 
 
 
+#initialize parameters as being none
+# JOBSUB_OPTS = None
+# RM_MYTEMP = None
+# JOBSUB_OPTS_SE = None
+# RESOURCES = None
+# IGNORECALIB = None
+# DESTCACHE = None
+# TWINDOW = None
+# MIN_NITE = None
+# MAX_NITE = None
+# SKIP_INCOMPLETE_SE = None
+# DO_HEADER_CHECK = None
+# TEFF_CUT_g = None
+# TEFF_CUT_i = None
+# TEFF_CUT_r= None
+# TEFF_CUT_Y= None
+# TEFF_CUT_z= None
+# TEFF_CUT_u= None
+# WRITEDB= None
 
-    JOBSUB_OPTS = None
-    RM_MYTEMP = None
-    JOBSUB_OPTS_SE = None
-    RESOURCES = None
-    IGNORECALIB = None
-    DESTCACHE = None
-    TWINDOW = None
-    MIN_NITE = None
-    MAX_NITE = None
-    SKIP_INCOMPLETE_SE = None
-    DO_HEADER_CHECK = None
-    TEFF_CUT_g = None
-    TEFF_CUT_i = None
-    TEFF_CUT_r= None
-    TEFF_CUT_Y= None
-    TEFF_CUT_z= None
-    TEFF_CUT_u= None
-    # WRITE_DB= None
-    WRITEDB= None
-    list_parameters = [WRITEDB, TEFF_CUT_g, TEFF_CUT_i, TEFF_CUT_r, TEFF_CUT_Y, TEFF_CUT_z, TEFF_CUT_u, JOBSUB_OPTS, RM_MYTEMP, JOBSUB_OPTS_SE, RESOURCES, IGNORECALIB, DESTCACHE, TWINDOW, MIN_NITE, MAX_NITE, SKIP_INCOMPLETE_SE, DO_HEADER_CHECK]
+list_parameters = [WRITEDB, TEFF_CUT_g, TEFF_CUT_i, TEFF_CUT_r, TEFF_CUT_Y, TEFF_CUT_z, TEFF_CUT_u, JOBSUB_OPTS, RM_MYTEMP, JOBSUB_OPTS_SE, RESOURCES, IGNORECALIB, DESTCACHE, TWINDOW, MIN_NITE, MAX_NITE, SKIP_INCOMPLETE_SE, DO_HEADER_CHECK]
 
 #     def update_parameter(parameter):
 
@@ -635,447 +507,382 @@ elif test_criteria == 0:
 
 
 
-    filepath = 'dagmaker.rc'
+filepath = 'dagmaker.rc'
+
+#read in dagmaker file so it knows where to update lines
+with open(filepath, 'r') as file:
+    data = file.readlines()
+
+season_temp = str(SEASON)
+data[18]='SEASON='+season_temp+'\n'
+print('Season update:')
+print (data[18])
+
+#update all parameters if a change was inputted as an argument
+if  args.RM_MYTEMP != (None):
+    rm_line = ()
+    for index, line in enumerate(data):
+        if line.startswith('RM_MYTEMP='):
+            rm_line = int(index)
+            print('Line '+line+'changed to:')
+    data[rm_line] = 'RM_MYTEMP='+str(args.RM_MYTEMP)+'\n'
+    print(data[rm_line])
+
+if  (args.MAX_NITE) != (None):
+    mn_line = ()
+    for index, line in enumerate(data):
+        if ('MAX_NITE=') in line:
+            mn_line = int(index)
+            print('Line '+line+'changed to:')
+    data[mn_line] = 'MAX_NITE='+str(args.MAX_NITE)+'\n'
+    print(data[mn_line])
+
+if  (args.MIN_NITE) != (None):
+    mi_line = ()
+    for index, line in enumerate(data):
+        if ('MAX_NITE=') in line:
+            mi_line = int(index)
+            print('Line '+line+'changed to:')
+    data[mi_line] = 'MIN_NITE='+str(args.MIN_NITE)+'\n'
+    print(data[mi_line])
+
+if  (args.pnum) != (None):
+    job_line = ()
+    for index, line in enumerate(data):
+        if line.startswith('PNUM='):
+            job_line = int(index)
+            print('Line '+line+'updated to:')
+    data[job_line] = 'PNUM='+str(args.pnum)+'\n'
+    print(data[job_line])
+if  (args.rnum) != (None):
+    job_line = ()
+    for index, line in enumerate(data):
+        if line.startswith('RNUM='):
+            job_line = int(index)
+            print('Line '+line+'updated to:')
+    data[job_line] = 'RNUM='+str(args.rnum)+'\n'
+    print(data[job_line])
+
+if  (args.JOBSUB_OPTS) != (None):
+    job_line = ()
+    for index, line in enumerate(data):
+        if line.startswith('JOBSUB_OPTS='):
+            job_line = int(index)
+            print('Line '+line+'updated to:')
+    data[job_line] = 'JOBSUB_OPTS='+str(args.JOBSUB_OPTS)+'\n'
+    print(data[job_line])
+
+if  (args.JOBSUB_OPTS_SE) != (None):
+    jobse_line = ()
+    for index, line in enumerate(data):
+        if line.startswith('JOBSUB_OPTS_SE='):
+            jobse_line = int(index)
+            print('Line '+line+'updated to:')
+    data[jobse_line] = 'JOBSUB_OPTS_SE='+str(args.JOBSUB_OPTS_SE)+'\n'
+    print(data[jobse_line])
+
+if  (args.WRITEDB) != (None):
+    db_line = ()
+    for index, line in enumerate(data):
+        if line.startswith('WRITEDB='):
+            db_line = int(index)
+            print('Line '+line+'updated to:')
+    data[db_line] = 'WRITEDB='+str(args.WRITEDB)+'\n'
+    print(data[db_line])
+
+if  (args.RESOURCES) != (None):
+    r_line = ()
+    for index, line in enumerate(data):
+        if line.startswith('RESOURCES='):
+            r_line = int(index)
+            print('Line '+line+'updated to:')
+    data[r_line] = 'RESOURCES='+RESOURCES+'\n'
+    print(data[r_line])
+
+if  (args.IGNORECALIB) != (None):
+    i_index = ()
+    for index, line in enumerate(data):
+        if line.startswith('IGNORECALIB='):
+            i_index = int(index)
+            print('Line '+line+'updated to:')
+    data[i_index] = 'IGNORECALIB='+str(args.IGNORECALIB)+'\n'
+    print(data[i_index])
+
+if  (args.DESTCACHE) != (None):
+    d_index = ()
+    for index, line in enumerate(data):
+        if line.startswith('DESTCACHE='):
+            d_index = int(index)
+            print('Line '+line+'updated to:')
+    data[d_index] = 'DESTCACHE='+str(args.DESTCACHE)+'\n'
+    print(data[d_index])
+
+if (args.TWINDOW) != (None):
+    t_index = ()
+    for index, line in enumerate(data):
+        if line.startswith('TWINDOW='):
+            t_index = int(index)
+            print('Line '+line+'updated to:')
+    data[t_index] = 'TWINDOW='+str(args.TWINDOW)+'\n'
+    print(data[t_index])
 
 
-    # with open(filepath, 'r') as fp:
-    #     line = fp.readline()
-    #     cnt = 1
-    #     while line:
-    #          print("Line {}: {}".format(cnt, line.strip()))
-    #          line = fp.readline()
-    #          cnt += 1
+if  (args.SKIP_INCOMPLETE_SE) != (None):
+    se_index = ()
+    for index, line in enumerate(data):
+        if line.startswith('SKIP_INCOMPLETE_SE='):
+            se_index = int(index)
+            print('Line '+line+'updated to:')
+    data[se_index] = 'SKIP_INCOMPLETE_SE='+str(args.SKIP_INCOMPLETE_SE)+'\n'
+    print(data[se_index])    
 
-    with open(filepath, 'r') as file:
-        data = file.readlines()
+if  (args.DO_HEADER_CHECK) != (None):
+    head_index = ()
+    for index, line in enumerate(data):
+        if line.startswith('DO_HEADER_CHECK='):
+            head_index = int(index)
+            print('Line '+line+'updated to:')
+    data[head_index] = 'DO_HEADER_CHECK='+str(args.DO_HEADER_CHECK)+'\n'
+    print(data[head_index])     
 
-    season_temp = str(SEASON)
-    data[18]='SEASON='+season_temp+'\n'
-    print('Season update:')
-    print (data[18])
+if  (args.TEFF_CUT_g) != (None):
+    tg_index = ()
+    for index, line in enumerate(data):
+        if line.startswith('TEFF_CUT_g='):
+            tg_index = int(index)
+            print('Line '+line+'updated to:')
+    data[tg_index] = 'TEFF_CUT_g='+str(args.TEFF_CUT_g)+'\n'
+    print(data[tg_index])   
 
+if  (args.TEFF_CUT_i) != (None):
+    ti_index = ()
+    for index, line in enumerate(data):
+        if line.startswith('TEFF_CUT_i='):
+            ti_index = int(index)
+            print('Line '+line+'updated to:')
+    data[ti_index] = 'TEFF_CUT_i='+str(args.TEFF_CUT_i)+'\n'
+    print(data[ti_index])
 
-    if  args.RM_MYTEMP != (None):
-        rm_line = ()
-        for index, line in enumerate(data):
-            if line.startswith('RM_MYTEMP='):
-                rm_line = int(index)
-                print('Line '+line+'changed to:')
-        data[rm_line] = 'RM_MYTEMP='+str(args.RM_MYTEMP)+'\n'
-        print(data[rm_line])
+if  (args.TEFF_CUT_r) != (None):
+    tr_index = ()
+    for index, line in enumerate(data):
+        if line.startswith('TEFF_CUT_r='):
+            tr_index = int(index)
+            print('Line '+line+'updated to:')
+    data[tr_index] = 'TEFF_CUT_r='+str(args.TEFF_CUT_r)+'\n'
+    print(data[tr_index])
 
-    if  (args.MAX_NITE) != (None):
-        mn_line = ()
-        for index, line in enumerate(data):
-            if ('MAX_NITE=') in line:
-                mn_line = int(index)
-                print('Line '+line+'changed to:')
-        data[mn_line] = 'MAX_NITE='+str(args.MAX_NITE)+'\n'
-        print(data[mn_line])
+if  (args.TEFF_CUT_Y) != (None):
+    ty_index = ()
+    for index, line in enumerate(data):
+        if line.startswith('TEFF_CUT_Y='):
+            ty_index = int(index)
+            print('Line '+line+'updated to:')
+    data[ty_index] = 'TEFF_CUT_Y='+str(args.TEFF_CUT_Y)+'\n'
+    print(data[ty_index])
 
-    if  (args.MIN_NITE) != (None):
-        mi_line = ()
-        for index, line in enumerate(data):
-            if ('MAX_NITE=') in line:
-                mi_line = int(index)
-                print('Line '+line+'changed to:')
-        data[mi_line] = 'MIN_NITE='+str(args.MIN_NITE)+'\n'
-        print(data[mi_line])
-        
-    if  (args.pnum) != (None):
-        job_line = ()
-        for index, line in enumerate(data):
-            if line.startswith('PNUM='):
-                job_line = int(index)
-                print('Line '+line+'updated to:')
-        data[job_line] = 'PNUM='+str(args.pnum)+'\n'
-        print(data[job_line])
-    if  (args.rnum) != (None):
-        job_line = ()
-        for index, line in enumerate(data):
-            if line.startswith('RNUM='):
-                job_line = int(index)
-                print('Line '+line+'updated to:')
-        data[job_line] = 'RNUM='+str(args.rnum)+'\n'
-        print(data[job_line])
+if  (args.TEFF_CUT_z) != (None):
+    tz_index = ()
+    for index, line in enumerate(data):
+        if line.startswith('TEFF_CUT_z='):
+            tz_index = int(index)
+            print('Line '+line+'updated to:')
+    data[tz_index] = 'TEFF_CUT_z='+str(args.TEFF_CUT_z) +'\n'
+    print(data[tz_index])
 
-    if  (args.JOBSUB_OPTS) != (None):
-        job_line = ()
-        for index, line in enumerate(data):
-            if line.startswith('JOBSUB_OPTS='):
-                job_line = int(index)
-                print('Line '+line+'updated to:')
-        data[job_line] = 'JOBSUB_OPTS='+str(args.JOBSUB_OPTS)+'\n'
-        print(data[job_line])
-
-    if  (args.JOBSUB_OPTS_SE) != (None):
-        jobse_line = ()
-        for index, line in enumerate(data):
-            if line.startswith('JOBSUB_OPTS_SE='):
-                jobse_line = int(index)
-                print('Line '+line+'updated to:')
-        data[jobse_line] = 'JOBSUB_OPTS_SE='+str(args.JOBSUB_OPTS_SE)+'\n'
-        print(data[jobse_line])
-
-    if  (args.WRITEDB) != (None):
-        db_line = ()
-        for index, line in enumerate(data):
-            if line.startswith('WRITEDB='):
-                db_line = int(index)
-                print('Line '+line+'updated to:')
-        data[db_line] = 'WRITEDB='+str(args.WRITEDB)+'\n'
-        print(data[db_line])
-
-    if  (args.RESOURCES) != (None):
-        r_line = ()
-        for index, line in enumerate(data):
-            if line.startswith('RESOURCES='):
-                r_line = int(index)
-                print('Line '+line+'updated to:')
-        data[r_line] = 'RESOURCES='+RESOURCES+'\n'
-        print(data[r_line])
-
-    if  (args.IGNORECALIB) != (None):
-        i_index = ()
-        for index, line in enumerate(data):
-            if line.startswith('IGNORECALIB='):
-                i_index = int(index)
-                print('Line '+line+'updated to:')
-        data[i_index] = 'IGNORECALIB='+str(args.IGNORECALIB)+'\n'
-        print(data[i_index])
-
-    if  (args.DESTCACHE) != (None):
-        d_index = ()
-        for index, line in enumerate(data):
-            if line.startswith('DESTCACHE='):
-                d_index = int(index)
-                print('Line '+line+'updated to:')
-        data[d_index] = 'DESTCACHE='+str(args.DESTCACHE)+'\n'
-        print(data[d_index])
-
-    if (args.TWINDOW) != (None):
-        t_index = ()
-        for index, line in enumerate(data):
-            if line.startswith('TWINDOW='):
-                t_index = int(index)
-                print('Line '+line+'updated to:')
-        data[t_index] = 'TWINDOW='+str(args.TWINDOW)+'\n'
-        print(data[t_index])
+if  (args.TEFF_CUT_u) != (None):
+    tu_index = ()
+    for index, line in enumerate(data):
+        if line.startswith('TEFF_CUT_u='):
+            tu_index = int(index)
+            print('Line '+line+'updated to:')
+    data[tu_index] = 'TEFF_CUT_u='+str(args.TEFF_CUT_u)+'\n'
+    print(data[tu_index])
 
 
-    if  (args.SKIP_INCOMPLETE_SE) != (None):
-        se_index = ()
-        for index, line in enumerate(data):
-            if line.startswith('SKIP_INCOMPLETE_SE='):
-                se_index = int(index)
-                print('Line '+line+'updated to:')
-        data[se_index] = 'SKIP_INCOMPLETE_SE='+str(args.SKIP_INCOMPLETE_SE)+'\n'
-        print(data[se_index])    
+with open(filepath, 'w') as file:
+     file.writelines( data )
+     file.close()
 
-    if  (args.DO_HEADER_CHECK) != (None):
-        head_index = ()
-        for index, line in enumerate(data):
-            if line.startswith('DO_HEADER_CHECK='):
-                head_index = int(index)
-                print('Line '+line+'updated to:')
-        data[head_index] = 'DO_HEADER_CHECK='+str(args.DO_HEADER_CHECK)+'\n'
-        print(data[head_index])     
+def EXPlist(explist):
 
-    if  (args.TEFF_CUT_g) != (None):
-        tg_index = ()
-        for index, line in enumerate(data):
-            if line.startswith('TEFF_CUT_g='):
-                tg_index = int(index)
-                print('Line '+line+'updated to:')
-        data[tg_index] = 'TEFF_CUT_g='+str(args.TEFF_CUT_g)+'\n'
-        print(data[tg_index])   
+    file_to_read = open(explist,'r')
+    exp_file = file_to_read.readlines()
+    elist = [exp.strip() for exp in exp_file]
+    file_to_read.close()
 
-    if  (args.TEFF_CUT_i) != (None):
-        ti_index = ()
-        for index, line in enumerate(data):
-            if line.startswith('TEFF_CUT_i='):
-                ti_index = int(index)
-                print('Line '+line+'updated to:')
-        data[ti_index] = 'TEFF_CUT_i='+str(args.TEFF_CUT_i)+'\n'
-        print(data[ti_index])
+    return elist
 
-    if  (args.TEFF_CUT_r) != (None):
-        tr_index = ()
-        for index, line in enumerate(data):
-            if line.startswith('TEFF_CUT_r='):
-                tr_index = int(index)
-                print('Line '+line+'updated to:')
-        data[tr_index] = 'TEFF_CUT_r='+str(args.TEFF_CUT_r)+'\n'
-        print(data[tr_index])
+def run_dagsh(exps_to_run, finished_exps, exp_set):
+    while True:
+        try:
+            #try to get task from the queue. get_nowait() function will raise queue.Empty exception if the queue is empty. 
+            current_exp = exps_to_run.get_nowait()
+        except queue.Empty:
 
-    if  (args.TEFF_CUT_Y) != (None):
-        ty_index = ()
-        for index, line in enumerate(data):
-            if line.startswith('TEFF_CUT_Y='):
-                ty_index = int(index)
-                print('Line '+line+'updated to:')
-        data[ty_index] = 'TEFF_CUT_Y='+str(args.TEFF_CUT_Y)+'\n'
-        print(data[ty_index])
-
-    if  (args.TEFF_CUT_z) != (None):
-        tz_index = ()
-        for index, line in enumerate(data):
-            if line.startswith('TEFF_CUT_z='):
-                tz_index = int(index)
-                print('Line '+line+'updated to:')
-        data[tz_index] = 'TEFF_CUT_z='+str(args.TEFF_CUT_z) +'\n'
-        print(data[tz_index])
-
-    if  (args.TEFF_CUT_u) != (None):
-        tu_index = ()
-        for index, line in enumerate(data):
-            if line.startswith('TEFF_CUT_u='):
-                tu_index = int(index)
-                print('Line '+line+'updated to:')
-        data[tu_index] = 'TEFF_CUT_u='+str(args.TEFF_CUT_u)+'\n'
-        print(data[tu_index])
-
-
-    with open(filepath, 'w') as file:
-         file.writelines( data )
-         file.close()
-
-    def EXPlist(explist):
-
-        file_to_read = open(explist,'r')
-        exp_file = file_to_read.readlines()
-        elist = [exp.strip() for exp in exp_file]
-        file_to_read.close()
-
-        return elist
-    
-    def run_dagsh(exps_to_run, finished_exps, exp_set):
-        while True:
-            try:
-                #try to get task from the queue. get_nowait() function will raise queue.Empty exception if the queue is empty. 
-                current_exp = exps_to_run.get_nowait()
-            except queue.Empty:
-
-                break
-            else:
-                #if no exception has been raised, create the command and add the task completion message to finished_exps queue
-                path_find_list = sys.path
-
-                #initialize command
-                start_time_make_dag = time.time()
-                command = [dagmaker_file + exp_set[current_exp]]
-    #             command = ['pwd']
-
-                #process for each command 
-                print("Running " + command[0])
-                process = subprocess.Popen(command[0], bufsize=1, shell=True, universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-                stdout, stderr = process.communicate()
-                f = open('dagmaker_'+exp_set[current_exp]+'.out', 'w')
-                f.write(stdout)
-                if stderr != None:
-                    f.write(stderr)
-                f.close()
-#                print so it knows its running 
-                make_time = str((time.time() - start_time_make_dag)/60)
-                print("All done with " + command[0] + '. It took ' + make_time + ' minutes.')
-
-                cwd = os.getcwd()
-                new_command = ['jobsub_submit_dag -G des --role=DESGW file://desgw_pipeline_' + exp_set[current_exp] + '.dag']
-    #             new_command = ['/cvmfs/fermilab.opensciencegrid.org/products/common/prd/jobsub_client/v1_3/NULL/jobsub_submit_dag -G des --role=DESGW file://desgw_pipeline_' + exp_set[current_exp] + '.dag']
-
-#                path = '/cvmfs/fermilab.opensciencegrid.org/products/common/prd/jobsub_client/v1_3_5/NULL/jobsub_submit_dag'
-#     #                 path = 'jobsub_submit_dag'
-#                new_command = [path +' -G des --role=DESGW file://desgw_pipeline_' + exp_set[current_exp] + '.dag']
-                start_time_submit_dag = time.time()
-                print("Running" + new_command[0])
-                os.system(new_command[0])
-                process = subprocess.Popen(new_command[0], bufsize=1, shell=True, universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-                stdout, stderr = process.communicate()
-                f = open('dag_submission_'+exp_set[current_exp]+'.out', 'w')
-                f.write(stdout)
-                if stderr != None:
-                    f.write(stderr)
-                    print('Errors found in dag submission; dags may have to be submitted manually. Please check the dag_submission.out files for more information.')
-                f.close()
-                submit_time = str((time.time() - start_time_submit_dag)/60)
-                print("All done with " + new_command[0] + '. It took ' + submit_time + ' minutes.')
-
-    #             print("Running" + new_command[0])
-    #             os.system(new_command[0])
-
-                finished_exps.put(exp_set[current_exp] + ' is done by ' + current_process().name)
-
-                #pause the system for a bit so that it has time to finish executing 
-                time.sleep(0.5)
-        return True
-    
-    
-    #source setup img proc, necessary for dagmaker
-#     cwd = os.getcwd()
-#     command_source = ['source '+cwd+'/setup_img_proc.sh']
-#     print('Running'+command_source[0])
-#     #ensure that source setup_diff_img will run by checking if there's a system error raised. 
-#     output = os.system(command_source[0])
-#     if output == 0:
-#         os.system(command_source[0])
-#     else:
-#         print('Module os.sys returned the error:')
-#         print(output)
-#         raise ValueError('Something went wrong with setup_img_proc.sh. Please manually run or try again.')
-#         logging.warning('Something went wrong with setup_img_proc.sh.')
-
-    if bench_criteria:
-        print("We haven't made the benchmark test exp list yet. This is a placeholder.")
-        
-#     inputted_exp_list = (raw_input("Please input the filepath to your exp.list file, relative to gw_workflow or as a full path: "))
-    inputted_exp_list = str(args.exp_list_location)
-        
-    i=0    
-    while i < 1:
-        isExist = os.path.exists(inputted_exp_list)
-
-    #         subprocess.check_output(new_command[0], stderr=subprocess.STDOUT)
-
-        if not isExist:
-                inputted_exp_list = (raw_input("Error, could not find your .list file. Please check location then input the filepath relative to gw_workflow one more time: "))
-                logging.warning("User's inputted exposure list wasn't found. Inputted list was" + inputted_exp_list)
-
-
+            break
         else:
-                i=1
-            #inputted_exp_list = (raw_input("Please input the filepath to your exp.list file, relative to gw_workflow or as a full path: "))
+            #if no exception has been raised, create the command and add the task completion message to finished_exps queue
+            path_find_list = sys.path
 
-            #isExist = os.path.exists(inputted_exp_list)
+            #initialize command
+            start_time_make_dag = time.time()
+            command = [dagmaker_file + exp_set[current_exp]]
+#             command = ['pwd']
 
-    #         subprocess.check_output(new_command[0], stderr=subprocess.STDOUT)
-
-
-    logging.warning("User's inputted exposure list was not found. The inputted exposure list location was" + inputted_exp_list)
-    # filepath = 'exposures_jul27.list'
-    filepath = inputted_exp_list
-    sample_exp_set = EXPlist(filepath)
-    number_exps = len(sample_exp_set)
-
-    #initializing information for the processing function arguments
-    number_of_tasks = number_exps
-    #number of processes is how many to submit/run at one time 
-    number_of_processes = 5
-    exp_set = sample_exp_set
-
-    def main():
-
-        #initialize queues so the system can recognize what's been done and what needs to be done 
-        exps_to_run = Queue()
-        finished_exps = Queue()
-        processes = []
-        sema = Semaphore(number_of_processes)
-
-        for i in range(number_of_tasks):
-            exps_to_run.put(int(i))
-
-        # creating processes
-        for w in range(number_of_processes):
-            sema.acquire()
-            p = Process(target=run_dagsh, args=(exps_to_run, finished_exps, exp_set))
-            processes.append(p)
-            p.start()
-
-        # completing processes
-        for p in processes:
-            p.join()
-
-        # print what has been done to double check everything went smoothly
-        while not finished_exps.empty():
-            print(finished_exps.get())
-
-        return True
-
-#     command_2 = ['. /cvmfs/des.opensciencegrid.org/eeups/startupcachejob31i.sh']
-#     print("Running" + command_2[0])
-#     output = os.system(command_2[0])
-#     if output == 0:
-#         os.system(command_2[0])
-#     else:
-#         print('os.system returned error number:')
-#         print(output)
-#         logging.warning(f'os.system returned error number {output} when trying to run . /cvmfs/des.opensciencegrid.org/eeups/startupcachejob31i.sh.')
-#         raise ValueError('Something went wrong with the command. Please manually run or try again.')
-
-    with open('exposures.list') as f:
-        data = []
-        for line in f: 
-            for exp in exp_set:
-                if exp in line:
-                    data.append(line)
-
-    exp_info = []
-    nite = []
-
-    for line in data:
-        data_extracted = line.split()
-        exp_info.append(data_extracted[0] + ' ' + data_extracted[5])
-        nite.append(data_extracted[1])
-
-    # Make the output dir if it doesn't exist
-
-
-
-    list_info = [str(exp_info), str(SEASON)]
-
-
-    output_dir_exists = os.path.exists('./image_proc_outputs/')
-    if output_dir_exists:
-        file_exists = os.path.exists('./image_proc_outputs/output.txt')
-        if file_exists:
-            with open('./image_proc_outputs/output.txt', 'w') as file:
-                for item in list_info:
-                    file.write("%s\n" % item)
-
-
-                file.close
-        else:
-
-            f = open('./image_proc_outputs/output.txt', 'a')
-            f.write(str(exp_info + '\n' + SEASON + '\n'))
+            #process for each command 
+            print("Running " + command[0])
+            process = subprocess.Popen(command[0], bufsize=1, shell=True, universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            stdout, stderr = process.communicate()
+            f = open('dagmaker_'+exp_set[current_exp]+'.out', 'w')
+            f.write(stdout)
+            if stderr != None:
+                f.write(stderr)
             f.close()
+#                print so it knows its running 
+            make_time = str((time.time() - start_time_make_dag)/60)
+            print("All done with " + command[0] + '. It took ' + make_time + ' minutes.')
+
+            cwd = os.getcwd()
+            new_command = ['jobsub_submit_dag -G des --role=DESGW file://desgw_pipeline_' + exp_set[current_exp] + '.dag']
+
+            start_time_submit_dag = time.time()
+            print("Running" + new_command[0])
+            os.system(new_command[0])
+            process = subprocess.Popen(new_command[0], bufsize=1, shell=True, universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            stdout, stderr = process.communicate()
+            f = open('dag_submission_'+exp_set[current_exp]+'.out', 'w')
+            f.write(stdout)
+            if stderr != None:
+                f.write(stderr)
+                print('Errors found in dag submission; dags may have to be submitted manually. Please check the dag_submission.out files for more information.')
+            f.close()
+            submit_time = str((time.time() - start_time_submit_dag)/60)
+            print("All done with " + new_command[0] + '. It took ' + submit_time + ' minutes.')
+
+
+            finished_exps.put(exp_set[current_exp] + ' is done by ' + current_process().name)
+
+            #pause the system for a bit so that it has time to finish executing 
+            time.sleep(0.5)
+    return True
+
+
+if bench_criteria:
+    print("We haven't made the benchmark test exp list yet. This is a placeholder.")
+
+#     inputted_exp_list = (raw_input("Please input the filepath to your exp.list file, relative to gw_workflow or as a full path: "))
+inputted_exp_list = str(args.exp_list_location)
+
+i=0    
+while i < 1:
+    isExist = os.path.exists(inputted_exp_list)
+
+    if not isExist:
+            inputted_exp_list = (raw_input("Error, could not find your .list file. Please check location then input the filepath relative to gw_workflow one more time: "))
+            logging.warning("User's inputted exposure list wasn't found. Inputted list was" + inputted_exp_list)
+
 
     else:
-        os.mkdir('./image_proc_outputs/')
+            i=1
+
+logging.warning("User's inputted exposure list was not found. The inputted exposure list location was" + inputted_exp_list)
+# filepath = 'exposures_jul27.list'
+filepath = inputted_exp_list
+sample_exp_set = EXPlist(filepath)
+number_exps = len(sample_exp_set)
+
+#initializing information for the processing function arguments
+number_of_tasks = number_exps
+#number of processes is how many to submit/run at one time 
+number_of_processes = 5
+exp_set = sample_exp_set
+
+#create and submit dags, multiprocessing
+def main():
+
+    #initialize queues so the system can recognize what's been done and what needs to be done 
+    exps_to_run = Queue()
+    finished_exps = Queue()
+    processes = []
+    sema = Semaphore(number_of_processes)
+
+    for i in range(number_of_tasks):
+        exps_to_run.put(int(i))
+
+    # creating processes
+    for w in range(number_of_processes):
+        sema.acquire()
+        p = Process(target=run_dagsh, args=(exps_to_run, finished_exps, exp_set))
+        processes.append(p)
+        p.start()
+
+    # completing processes
+    for p in processes:
+        p.join()
+
+    # print what has been done to double check everything went smoothly
+    while not finished_exps.empty():
+        print(finished_exps.get())
+
+    return True
+
+
+with open('exposures.list') as f:
+    data = []
+    for line in f: 
+        for exp in exp_set:
+            if exp in line:
+                data.append(line)
+
+exp_info = []
+nite = []
+
+for line in data:
+    data_extracted = line.split()
+    exp_info.append(data_extracted[0] + ' ' + data_extracted[5])
+    nite.append(data_extracted[1])
+
+# Make the output dir if it doesn't exist
+
+
+
+list_info = [str(exp_info), str(SEASON)]
+
+
+output_dir_exists = os.path.exists('./image_proc_outputs/')
+if output_dir_exists:
+    file_exists = os.path.exists('./image_proc_outputs/output.txt')
+    if file_exists:
+        with open('./image_proc_outputs/output.txt', 'w') as file:
+            for item in list_info:
+                file.write("%s\n" % item)
+
+
+            file.close
+    else:
+
         f = open('./image_proc_outputs/output.txt', 'a')
-        for item in list_info:
-                    f.write("%s\n" % item)
+        f.write(str(exp_info + '\n' + SEASON + '\n'))
+        f.close()
+
+else:
+    os.mkdir('./image_proc_outputs/')
+    f = open('./image_proc_outputs/output.txt', 'a')
+    for item in list_info:
+                f.write("%s\n" % item)
 
 
-        f.close
+    f.close
 
-#     path_find_list = sys.path
-#     pycurl_path = '/cvmfs/fermilab.opensciencegrid.org/products/common/prd/pycurl/v7_16_4/Linux64bit-2-6-2-12/pycurl'
-#     if pycurl_path in path_find_list:
-#         print('Found the path to pycurl.')
-#     if pycurl_path not in path_find_list:
-#         print('Missing path to pycurl. Appending path now.')
-#         sys.path.append('/cvmfs/fermilab.opensciencegrid.org/products/common/prd/pycurl/v7_16_4/Linux64bit-2-6-2-12/pycurl')
-#         path_find_list = sys.path
-#         logging.warning(f'System was missing the path to pycurl. The code attempted to correct this with the following reflection on its path: {path_find_list}')
-        
-#     pythonpath_var = os.environ['PYTHONPATH']
-#     path_var = os.environ['PATH']
 
-    #logging.debug(f'Path and Python path variables before running multiproc: {pythonpath_var} {path_var}')
-    
-    
-    start_time_multiproc = time.time()
-    if __name__ == '__main__':
+start_time_multiproc = time.time()
+if __name__ == '__main__':
 
-        main()
+    main()
 
-    finish_time = str((time.time() - start_time_multiproc)/60)
-    print('Finished with dag creation and submission. Multiprocessing took '+finish_time+' minutes.')
+finish_time = str((time.time() - start_time_multiproc)/60)
+print('Finished with dag creation and submission. Multiprocessing took '+finish_time+' minutes.')
 
-#     pythonpath_var = os.environ['PYTHONPATH']
-#     path_var = os.environ['PATH']
 
-#     logging.debug('Path and Python path variables after running multiproc: PYTHONPATH: ' + pythonpath_var + 'PATH: ' + path_var)
-    #exp_info is your list with (exp_num band, exp_num band), other_info is the nite and other info that i will get from dagmaker upon combining codes
-
-    print('Image processing completed.')
+print('Image processing completed.')
