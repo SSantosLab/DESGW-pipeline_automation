@@ -1,9 +1,10 @@
+#danas_automations_:)
 #!/usr/bin/env python
 # coding: utf-8
 
 # In[1]:
 
-
+import re
 import os
 import sys
 import pandas
@@ -15,6 +16,17 @@ import argparse
 import shutil
 import datetime
 from collections import Counter
+
+
+
+
+#accept arguments
+
+parser = argparse.ArgumentParser(description=__doc__, 
+                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+parser.add_argument('--triggermjd')
+parser.add_argument('--propid')
+
 
 
 # In[2]:
@@ -56,31 +68,46 @@ else:
 #Read file outputted from image processing to get season, nite, exposure, band
 #If no file, input manually
 
+#Read file outputted from image processing to get season, nite, exposure, band
+#If no file, input manually
+
 try:
     img_proc_file = open("./image_proc_outputs/output.txt")
     lines = img_proc_file.readlines()
     
-    if input('.txt file with exposures found. Would you like to use this file? (y/n): ') == ('y'):
-        print('\nExtracting season, exposure, and band from sampeoutput.txt file\n')
-        
-        exposures = lines[0].strip()
-        exposures = exposures[1:-1]
-        exposures = list(exposures.split(","))
+    print('\nExtracting season, exposure, and band from output.txt file\n')
 
-        season = lines[1].strip()
+    exposures = lines[0].strip()
+    exposures = exposures[1:-1]
+    exposures = list(exposures.split(","))
 
-        print('Season: ' + season)
-        print('Exposures: ' + str(exposures))
-    
-    else:
-        exposures = [str(item) for item in input("Enter each exposure followed by band, separate with commas (ex. '938524 i, 938511 i, 938522 i'): ").split(',')]
-        season = input('Season: ')
-    
+    season = lines[1].strip()
+
+    print('Season: ' + season)
+    print('Exposures: ' + str(exposures))
     
 except:
-    print('no .txt file, must input\n')
-    exposures = [str(item) for item in input("Enter each exposure followed by band, separate with commas (ex. '938524 i, 938511 i, 938522 i'): ").split(',')]
-    season = input('Season: ')
+    print('no .txt file, must input exposures\n')
+    exposures = []
+    exposures_num = [str(item) for item in raw_input("Enter each exposure separated by spaces (ex. '938524 938511 938522'): ").split(' ')]
+    season = raw_input('Season: ')
+    #get exposure band
+    try:
+        for exposure in exposures_num:
+            band_dirs = glob.glob('/pnfs/des/persistent/gw/exp/' + '*' + '/' + exposure +'/' + 'dp' + season + '/*')
+            first_band_dir = str(band_dirs[:1]).split('/')[-1:]
+            band_only = re.sub(r"[^a-zA-Z]+", "", str(first_band_dir))
+            exposure_w_band = exposure + ' ' + band_only
+            exposures.append(exposure_w_band)
+    except Exception as e: 
+        print(e)
+        print('invalid exposures input')
+       
+    
+    print('\nExposures with bands: ' + str(exposures))
+    
+
+
 
 
 # In[12]:
@@ -104,8 +131,8 @@ for exposure in exposures:
     if band not in bandslist:
         bandslist.append(band)
     
-    term_size = os.get_terminal_size()
-    print('=' * term_size.columns)
+    #term_size = os.get_terminal_size()
+    print('=' * 12)
     print("\nFOR EXPOSURE " + str(exposure) + ":\n")
     exposure_dir = dir_prefix + '*' + '/' + exposure +'/' + dpSeason + band
     band_dirs = glob.glob(exposure_dir + '_*' + '/') #what we're counting to make sure they're all there
@@ -204,16 +231,19 @@ with open(current_exposures, 'w') as f:
 
 #ask user for
 
-ligoid = input('ligoid (ex. GW170814): ')
-triggerid = input('triggerid (ex. G298048): ')
-propid = input('propid (ex. 2017B-0110): ')
-triggermjd = input('triggermjd (ex. 57979.437): ')
+#ligoid = input('ligoid (ex. GW170814): ')
+#triggerid = input('triggerid (ex. G298048): ')
+try:
+    propid = args.propid
+    triggermjd = args.triggermjd
+except:
+    pass
 
 print('creating .ini file with completed exposures list\n')
 
 exposures_listfile = str(current_exposures)
 
-shutil.copyfile('template_postproc.ini', 'postproc_' + str(season) + '.ini')
+os.system('cp ./template_postproc.ini ./postproc_' + str(season) + '.ini')
 postproc_season_file = 'postproc_'+ str(season) + '.ini'
 
 edit = configparser.ConfigParser()
@@ -221,10 +251,10 @@ edit.read(postproc_season_file)
 
 general = edit["general"]
 general["season"] = season
-general["ligoid"] = ligoid
-general["triggerid"] = triggerid
-general["propid"] = propid
-general["triggermjd"] = triggermjd
+#general["ligoid"] = ligoid
+#general["triggerid"] = triggerid
+#general["propid"] = propid
+#general["triggermjd"] = triggermjd
 general["exposures_listfile"] = exposures_listfile
 
 #editing bandslist
@@ -256,18 +286,13 @@ truthplusfile = truthtable['plusname']
 #Check if we want to SKIPTO
 
 if glob.glob('../Post-Processing/'+ outdir[2:] + '/makedatafiles/LightCurvesReal/*.dat'):
-    skip = input('It seems step 5 run_postproc has already been completed, would you like to skip to step 6? (y/n): ')
-    if skip == ('y'):
-        SKIPTO_flag = 6
-        print('\nWill run post processing from step 6')
-    else:
-        print('\nWill run post processing from scratch')
+    SKIPTO_flag = 6
+    print('\nWill run post processing from step 6')
 elif os.path.exists('../Post-Processing/' + outdir[2:] + '/truthtable'+str(season)+'/'+truthplusfile): #output from step 4
-    skip = input('\nIt seems step 4 run_postproc has already been completed, would you like to skip to step 5? (y/n): ')
-    if skip == ('y'):
-        SKIPTO_flag = 5
-    else:
-        print('Will run post processing from step 5')
+
+    SKIPTO_flag = 5
+    print('\nWill run post processing from step 5')
+
 else:
     print('No evidence of steps already completed in post processing, will not skip')
 
@@ -279,27 +304,28 @@ print('\nContinuing to post processing')
 
 #move .ini file and exposures list into Post-Processing
 
-os.system('mv ' + str(postproc_season_file) + ' ../Post-Processing')
-os.system('mv ' + str(current_exposures) + ' ../Post-Processing')
+os.system('cp ./' + str(postproc_season_file) + ' ../Post-Processing')
+os.system('cp ./' + str(current_exposures) + ' ../Post-Processing')
 
 #setup for Post Processing
 os.system('source ../Post-Processing/diffimg_setup.sh')
 print('running diffimg_setup.sh\n')
 
-update_forcephoto_links = input('Are you running post processing for new exposures? (aka: run ./update_forcephoto_links.sh?) y/n: ')
-if update_forcephoto_links == ('y'):
-    os.system('../Post-Processing/update_forcephoto_links.sh')
+os.system('../Post-Processing/update_forcephoto_links.sh')
     
 #run_postproc.py
+
+#changing directory because this code needs to run in postproc
+os.chdir('../Post-Processing')
 
 try:
     SKIPTO_flag
 except NameError:
     print("\nRunning run_postproc.py\n")
-    os.system('nohup python ../Post-Processing/run_postproc.py --outputdir outdir --season '+ str(season)+ ' &> postproc_run.out &')
+    os.system('nohup python run_postproc.py --outputdir outdir --season '+ str(season)+ ' &> postproc_run.out &')
 else:
     print("\nRunning run_postproc.py with skip\n")
-    os.system('nohup python ../Post-Processing/run_postproc.py --SKIPTO ' + str(SKIPTO_flag) + ' --outputdir outdir --season '+ str(season)+ ' &> postproc_run.out &')
+    os.system('nohup python run_postproc.py --SKIPTO ' + str(SKIPTO_flag) + ' --outputdir outdir --season '+ str(season)+ ' &> postproc_run.out &')
 
 
 # In[ ]:

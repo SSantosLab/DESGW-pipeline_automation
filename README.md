@@ -1,39 +1,41 @@
 # DESGW-image-processing
 ---
 ## Introduction to this automation:
-Our codes work with user input to, theoretically, automate the DESGW pipeline (the image processing and post processing steps). The goal of this automation is to reduce user input and streamline observation response. Some user input is required for the automation, which will be specified along with each step.
-## Image Processing Code Explanation:
-### IMPORTANT NOTES
-Before you begin, make sure you do the following:
+Our codes work with user input to, theoretically, automate the DESGW pipeline (the image processing and post processing steps). The goal of this automation is to reduce user input and streamline observation response. Theoretically, this reduces user input to one response (the initial start of the shell script), but there are some options and situations in which the user must be prompted, particularly when errors occur.
 
-1. Run your proxy
+### IMPORTANT NOTES
+Before you begin, make sure you:
+
+1. Run your proxy, or are logged in as desgw
 2. Run
 
     ```
-    conda activate des18a
+    conda activate des20a
     ```
-3. Run
+## Shell Script Explanation/How to run full automation:
 
-    ```
-    python full_image_proc_gwworkflow.py 
-    ```
-The code must be run with des18a due to sourcing issues. It also should be run in python 2 due to some dependencies on other scripts written in 2. 
+To run the full automation, simply run full_pipeline_automation.sh. This shell script does the necessary sourcing, runs image processing, then automatically runs post processing. 
+
+## Image Processing Code Explanation:
+
+### Test Pipeline (Incomplete)
+When you run the code, it will first ask you if the run is a test. This code is, as of now, incomplete, but eventually, it will automatically run the DESGW Testing Pipeline when prompted.
 
 ### Updating dagmaker.rc
 Dagmaker.rc is a config file that sets the parameters necessary for later creating a dag with dagmaker.sh. This section explains how the image processing code searches for these input parameters from the user in order to update the config file. 
 
-To start off with, the image processing code asks for user input on a desired season number. Season is essentially the identification for a dataset, and should therefore be a unique number. Once the user inputs a desired season (or asks the code to generate one), the code will query the DES database in order to make sure it hasn't been used before. 
+To start off with, the image processing code checks for user input on a desired season number. Season is essentially the identification for a dataset, and should therefore be a unique number. The code will query the DES database in order to make sure the inputted or generated season number hasn't been used before. 
 
-Next, the code asks if you'd like to update any other parameters. For a list of parameters, look within the overall dagmaker.rc explanation within gw_workflow. These parameters should be updated only if the user knows what they need to update them to.
+Next, the code checks if the user has updated any other parameters. For a list of parameters, look within the overall dagmaker.rc explanation within gw_workflow. These parameters should be updated only if the user knows what they need to update them to.
 
 ### Parallel-Processing Dagmaker and Submitting Dags
 Before running the processes outlined in this section, it's necessary to have a DESGW proxy. It's also necessary to run:
 
     source setup_img_proc.sh
   
-The automation will run this for you. However, if, in doing so, it raises an exception, it is important to manually run it. Without sourcing setup_img_proc, dag creation and submission will fail.
+If you're running from full_pipeline_automation.sh, this will already be run for you. However, if running image processing alone, it is important to manually run this command. Without sourcing setup_img_proc, dag creation and submission will fail.
 
-Next, the user needs to input a .list file containing a list of the exposures they need to run image processing on. The code will then automatically run dagmaker.sh, producing a .out file named with the exposure in mind, and then submit the created dag. This is done through parallel processing (the multiproc package). The code will run up to 5 processes at once, in order to not overwhelm the DES machine, but if desired, one can go into the code and edit the "number_of_processes" variable to change how many will parallel process. 
+The code uses the inputted .list file of exposures it needs to run image processing on. The code will then automatically run dagmaker.sh, producing a .out file named with the exposure in mind, and then submit the created dag. This is done through parallel processing (the multiproc package). The code will run up to 5 processes at once, in order to not overwhelm the DES machine, but if desired, one can go into the code and edit the "number_of_processes" variable to change how many will parallel process. 
 
 The code works by creating a queue object of all of the exposures within the .list file, then taking five initial exposures to run dagmaker.sh on, piping the output to a dagmaker_*exp_number*.out file. As soon as the .out file has been successfully created, the dag is submitted. Once an exposure finishes, the code takes the next exposure from the queue and runs it on the process that is no longer running that exposure, and removes the exposure that finished from the queue. The code will continue to run until the queue object is empty, that is, all the exposures have gone through. 
 
@@ -73,4 +75,5 @@ It then runs run_postproc.py in the form of
     nohup python ./Post-Processing/run_postproc.py --outputdir outdir --season '+ str(season)+ ' &> postproc_run.out &'
 
 ## How to Use the Repo:
+
 
