@@ -308,8 +308,9 @@ os.system('cp ./' + str(postproc_season_file) + ' ../Post-Processing')
 os.system('cp ./' + str(current_exposures) + ' ../Post-Processing')
 
 #setup for Post Processing
-os.system('source ../Post-Processing/diffimg_setup.sh')
-print('running diffimg_setup.sh\n')
+#os.system('source ../Post-Processing/diffimg_setup.sh')
+#print('running diffimg_setup.sh\n')
+
 
 os.system('../Post-Processing/update_forcephoto_links.sh')
     
