@@ -146,10 +146,29 @@ else:
     dagmaker_file = './DAGMaker_proxyuser.sh '
     print('You are not running as desgw.')
 
+    
+#necessary sourcing
+os.system('./automation_sourcing.sh')
+print('Running sourcing...')
+logging.info('Completed sourcing test')
+
+#checking to see if exposures.list has been pulled from db
+exp_file = ['../gw_workflow/exposures.list']
+if os.path.exists(exp_file[0]):
+    logging.info('Found exposures.list. Checking to see if it is empty...')
+    if os.path.getsize(exp_file[0]) == 0:
+        print("No data found in exposures.list file! Getting the file... (this may take a while)") 
+        logging.info('Filesize of exposures.list was empty, pulling it from db')
+        os.system('./exposure_list_sourcing.sh')
+elif not os.path.exists(exp_file[0]):
+        print('Missing exposures.list file. getting the file... (this may take a while)')
+        logging.info('Missing exposures.list file. pulling it from db')
+        os.system('./exposure_list_sourcing.sh')
             
 #changing directory because this code needs to run in gw_workflow
 os.chdir('../gw_workflow')
 logging.info('Code now running in gw_workflow.')
+
 
 #test season numbers are 2206 and 2208
 #test_season_check = (raw_input("Would you like to use a test season number? [y/n]: "))
@@ -282,7 +301,7 @@ else:
 # TEFF_CUT_u= None
 # WRITEDB= None
 
-list_parameters = [WRITEDB, TEFF_CUT_g, TEFF_CUT_i, TEFF_CUT_r, TEFF_CUT_Y, TEFF_CUT_z, TEFF_CUT_u, JOBSUB_OPTS, RM_MYTEMP, JOBSUB_OPTS_SE, RESOURCES, IGNORECALIB, DESTCACHE, TWINDOW, MIN_NITE, MAX_NITE, SKIP_INCOMPLETE_SE, DO_HEADER_CHECK]
+#list_parameters = [WRITEDB, TEFF_CUT_g, TEFF_CUT_i, TEFF_CUT_r, TEFF_CUT_Y, TEFF_CUT_z, TEFF_CUT_u, JOBSUB_OPTS, RM_MYTEMP, JOBSUB_OPTS_SE, RESOURCES, IGNORECALIB, DESTCACHE, TWINDOW, MIN_NITE, MAX_NITE, SKIP_INCOMPLETE_SE, DO_HEADER_CHECK]
 
 #     def update_parameter(parameter):
 
@@ -546,21 +565,21 @@ if  (args.MIN_NITE) != (None):
     data[mi_line] = 'MIN_NITE='+str(args.MIN_NITE)+'\n'
     print(data[mi_line])
 
-if  (args.pnum) != (None):
+if  (args.PNUM) != (None):
     job_line = ()
     for index, line in enumerate(data):
         if line.startswith('PNUM='):
             job_line = int(index)
             print('Line '+line+'updated to:')
-    data[job_line] = 'PNUM='+str(args.pnum)+'\n'
+    data[job_line] = 'PNUM='+str(args.PNUM)+'\n'
     print(data[job_line])
-if  (args.rnum) != (None):
+if  (args.RNUM) != (None):
     job_line = ()
     for index, line in enumerate(data):
         if line.startswith('RNUM='):
             job_line = int(index)
             print('Line '+line+'updated to:')
-    data[job_line] = 'RNUM='+str(args.rnum)+'\n'
+    data[job_line] = 'RNUM='+str(args.RNUM)+'\n'
     print(data[job_line])
 
 if  (args.JOBSUB_OPTS) != (None):
@@ -768,8 +787,8 @@ def run_dagsh(exps_to_run, finished_exps, exp_set):
     return True
 
 
-if bench_criteria:
-    print("We haven't made the benchmark test exp list yet. This is a placeholder.")
+# if bench_criteria:
+#     print("We haven't made the benchmark test exp list yet. This is a placeholder.")
 
 #     inputted_exp_list = (raw_input("Please input the filepath to your exp.list file, relative to gw_workflow or as a full path: "))
 inputted_exp_list = str(args.exp_list_location)
