@@ -308,27 +308,26 @@ os.system('mv ' + str(postproc_season_file) + ' ../Post-Processing')
 os.system('mv ' + str(current_exposures) + ' ../Post-Processing')
 
 #setup for Post Processing
-os.system('source ../Post-Processing/diffimg_setup.sh')
-print('running diffimg_setup.sh\n')
+#os.system('source ../Post-Processing/diffimg_setup.sh')
+#print('running diffimg_setup.sh\n')
 
-os.system('../Post-Processing/update_forcephoto_links.sh')
-    
+#os.system('../Post-Processing/update_forcephoto_links.sh')
+#    
 #run_postproc.py
-
-try:
-    SKIPTO_flag
-except NameError:
-    print("\nRunning run_postproc.py\n")
-    os.system('nohup python ../Post-Processing/run_postproc.py --outputdir outdir --season '+ str(season)+ ' &> postproc_run.out &')
-else:
-    print("\nRunning run_postproc.py with skip\n")
-    os.system('nohup python ../Post-Processing/run_postproc.py --SKIPTO ' + str(SKIPTO_flag) + ' --outputdir outdir --season '+ str(season)+ ' &> postproc_run.out &')
+#
+#try:
+#    SKIPTO_flag
+#except NameError:
+#    print("\nRunning run_postproc.py\n")
+#    os.system('nohup python ../Post-Processing/run_postproc.py --outputdir outdir --season '+ str(season)+ ' &> postproc_run.out #&')
+#else:
+#    print("\nRunning run_postproc.py with skip\n")
+#    os.system('nohup python ../Post-Processing/run_postproc.py --SKIPTO ' + str(SKIPTO_flag) + ' --outputdir outdir --season '+ #str(season)+ ' &> postproc_run.out &')
 
 
 # In[ ]:
 
 
-#make cuts
 
 
 # In[ ]:
