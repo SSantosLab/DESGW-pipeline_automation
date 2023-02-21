@@ -53,6 +53,10 @@ isExist = os.path.exists(filepath[0])
 if isExist:
     print('Post-Processing found')
 else:
+    
+    # timeout after 1 minute
+    # look for the script again after 3 minutes sleep, repeat
+    
     git_command = ['git clone https://github.com/SSantosLab/Post-Processing.git ../Post-Processing' ]
     print('Running'+git_command[0]+'in order to clone necessary folder post processing...')
     git_output = os.system(git_command[0])
@@ -89,8 +93,8 @@ try:
 except:
     print('no .txt file, must input exposures\n')
     exposures = []
-    exposures_num = [str(item) for item in input("Enter each exposure separated by spaces (ex. '938524 938511 938522'): ").split(' ')]
-    season = input('Season: ')
+    exposures_num = [str(item) for item in raw_input("Enter each exposure separated by spaces (ex. '938524 938511 938522'): ").split(' ')]
+    season = raw_input('Season: ')
     #get exposure band
     try:
         for exposure in exposures_num:
@@ -131,8 +135,8 @@ for exposure in exposures:
     if band not in bandslist:
         bandslist.append(band)
     
-    term_size = os.get_terminal_size()
-    print('=' * term_size.columns)
+    #term_size = os.get_terminal_size()
+    print('=' * 12)
     print("\nFOR EXPOSURE " + str(exposure) + ":\n")
     exposure_dir = dir_prefix + '*' + '/' + exposure +'/' + dpSeason + band
     band_dirs = glob.glob(exposure_dir + '_*' + '/') #what we're counting to make sure they're all there
@@ -243,7 +247,7 @@ print('creating .ini file with completed exposures list\n')
 
 exposures_listfile = str(current_exposures)
 
-shutil.copyfile('template_postproc.ini', 'postproc_' + str(season) + '.ini')
+os.system('cp ./template_postproc.ini ./postproc_' + str(season) + '.ini')
 postproc_season_file = 'postproc_'+ str(season) + '.ini'
 
 edit = configparser.ConfigParser()
@@ -304,8 +308,8 @@ print('\nContinuing to post processing')
 
 #move .ini file and exposures list into Post-Processing
 
-os.system('mv ' + str(postproc_season_file) + ' ../Post-Processing')
-os.system('mv ' + str(current_exposures) + ' ../Post-Processing')
+os.system('cp ./' + str(postproc_season_file) + ' ../Post-Processing')
+os.system('cp ./' + str(current_exposures) + ' ../Post-Processing')
 
 #setup for Post Processing
 #os.system('source ../Post-Processing/diffimg_setup.sh')
