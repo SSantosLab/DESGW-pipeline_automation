@@ -1,6 +1,5 @@
 import os
 import sys
-import matplotlib.pyplot as plt
 import glob
 import random
 import pandas as pd
@@ -151,8 +150,44 @@ else:
 os.chdir('../gw_workflow')
 logging.info('Code now running in gw_workflow.')
 
-#test season numbers are 2206 and 2208
-#test_season_check = (raw_input("Would you like to use a test season number? [y/n]: "))
+#checking to see if exposures.list has been pulled from db
+exp_file = ['exposures.list']
+if os.path.exists(exp_file[0]):
+    print('Found exposures.list. Checking to see if it is empty...')
+    if os.path.getsize(exp_file[0]) == 0:
+        print("No data found in exposures.list file! Getting the file... (this may take a while)") 
+        print('Filesize of exposures.list was empty, pulling it from db')
+        os.system('./getExposureInfo.sh')
+elif not os.path.exists(exp_file[0]):
+        print('Missing exposures.list file. getting the file... (this may take a while)')
+        os.system('./getExposureInfo.sh')
+
+# #necessary sourcing
+# os.environ["JOBSUB_PYVER"] = "python2.7-ucs4"
+# #put in other file stuff
+# os.environ["SHELL"]= "/usr/bin/env bash -c 'which bash'"
+# os.environ["CC"]="/usr/bin/gcc"
+# os.environ["CXX"]="/usr/bin/g++"
+# os.environ["GFORTRAN"]="/usr/bin/gfortran"
+
+# os.environ["EUPS_PKGROOT"]="http://desbuild2.cosmology.illinois.edu/eeups/webservice/repository"
+# os.environ["SVNROOT"]="https://dessvn.cosmology.illinois.edu/svn/desdm/devel"
+# os.environ["EUPS_DIR"]="/cvmfs/des.opensciencegrid.org/2015_Q2/eeups/SL6/eups/1.2.30"
+
+# os.environ["PATH"] = "/cvmfs/fermilab.opensciencegrid.org/products/common/db/../prd/curl/v7_64_1/Linux64bit-3-10/bin:/cvmfs/fermilab.opensciencegrid.org/products/common/db/../prd/jobsub_client/v1_3_5/NULL:/cvmfs/fermilab.opensciencegrid.org/products/common/db/../prd/ups/v6_0_7/Linux64bit-3-10-2-17/bin:/cvmfs/des.opensciencegrid.org/fnal/anaconda2/condabin:/usr/lib64/qt-3.3/bin:/opt/puppetlabs/bin:/home/s1/desgw/perl5/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/opt/puppetlabs/bin"
+# os.environ["PYTHONPATH"] = "/cvmfs/fermilab.opensciencegrid.org/products/common/db/../prd/python_future_six_request/v1_3/Linux64bit-3-10-2-17-python2-7-ucs4:/cvmfs/fermilab.opensciencegrid.org/products/common/db/../prd/jobsub_client/v1_3_5/NULL"
+# os.environ["LIBRARY_PATH"]="/cvmfs/fermilab.opensciencegrid.org/products/common/db/../prd/curl/v7_64_1/Linux64bit-3-10/lib"
+# os.environ["IFDH_NO_PROXY"]="1"
+# os.environ["IFDHC_LIB"]="/cvmfs/fermilab.opensciencegrid.org/products/common/db/../prd/ifdhc/v2_6_8/Linux64bit-3-10-2-17/lib"
+# os.environ["IFDHC_LIB"]="/cvmfs/fermilab.opensciencegrid.org/products/common/db/../prd/ifdhc/v2_6_8/Linux64bit-3-10-2-17/lib"
+# os.environ["IFDHC_FQ_DIR"]="/cvmfs/fermilab.opensciencegrid.org/products/common/prd/ifdhc/v2_6_8/Linux64bit-3-10-2-17"
+# os.environ["IFDHC_CONFIG_DIR"]="/cvmfs/fermilab.opensciencegrid.org/products/common/prd/ifdhc_config/v2_6_8/NULL"
+# os.environ["CIGETCERTLIBS_DIR"]="/cvmfs/fermilab.opensciencegrid.org/products/common/prd/cigetcertlibs/v1_1/Linux64bit-3-10-2-17"
+# os.environ["EUPS_PATH"]="/cvmfs/des.opensciencegrid.org/eeups/fnaleups:$EUPS_PATH"
+# #test season numbers are 2206 and 2208
+# #test_season_check = (raw_input("Would you like to use a test season number? [y/n]: "))
+
+
 test_season_check = str(args.test_season)
 test_season = test_season_check
 
@@ -257,8 +292,8 @@ elif test_season == ('n'):
             raise ERROR("Something's gone wrong. Please restart and input a new season number.")
             logging.debug('Something went wrong with choosing a unique season value.')
 
-else:
-    raise Exception('Please restart and enter [y/n]. ')
+# else:
+#     raise Exception('Please restart and enter [y/n]. ')
 
 
 
@@ -282,7 +317,7 @@ else:
 # TEFF_CUT_u= None
 # WRITEDB= None
 
-list_parameters = [WRITEDB, TEFF_CUT_g, TEFF_CUT_i, TEFF_CUT_r, TEFF_CUT_Y, TEFF_CUT_z, TEFF_CUT_u, JOBSUB_OPTS, RM_MYTEMP, JOBSUB_OPTS_SE, RESOURCES, IGNORECALIB, DESTCACHE, TWINDOW, MIN_NITE, MAX_NITE, SKIP_INCOMPLETE_SE, DO_HEADER_CHECK]
+#list_parameters = [WRITEDB, TEFF_CUT_g, TEFF_CUT_i, TEFF_CUT_r, TEFF_CUT_Y, TEFF_CUT_z, TEFF_CUT_u, JOBSUB_OPTS, RM_MYTEMP, JOBSUB_OPTS_SE, RESOURCES, IGNORECALIB, DESTCACHE, TWINDOW, MIN_NITE, MAX_NITE, SKIP_INCOMPLETE_SE, DO_HEADER_CHECK]
 
 #     def update_parameter(parameter):
 
@@ -546,21 +581,21 @@ if  (args.MIN_NITE) != (None):
     data[mi_line] = 'MIN_NITE='+str(args.MIN_NITE)+'\n'
     print(data[mi_line])
 
-if  (args.pnum) != (None):
+if  (args.PNUM) != (None):
     job_line = ()
     for index, line in enumerate(data):
         if line.startswith('PNUM='):
             job_line = int(index)
             print('Line '+line+'updated to:')
-    data[job_line] = 'PNUM='+str(args.pnum)+'\n'
+    data[job_line] = 'PNUM='+str(args.PNUM)+'\n'
     print(data[job_line])
-if  (args.rnum) != (None):
+if  (args.RNUM) != (None):
     job_line = ()
     for index, line in enumerate(data):
         if line.startswith('RNUM='):
             job_line = int(index)
             print('Line '+line+'updated to:')
-    data[job_line] = 'RNUM='+str(args.rnum)+'\n'
+    data[job_line] = 'RNUM='+str(args.RNUM)+'\n'
     print(data[job_line])
 
 if  (args.JOBSUB_OPTS) != (None):
@@ -744,12 +779,13 @@ def run_dagsh(exps_to_run, finished_exps, exp_set):
             print("All done with " + command[0] + '. It took ' + make_time + ' minutes.')
 
             cwd = os.getcwd()
-            new_command = ['jobsub_submit_dag -G des --role=DESGW file://desgw_pipeline_' + exp_set[current_exp] + '.dag']
+            string_command = 'file://desgw_pipeline_'+ exp_set[current_exp] + '.dag'
+            new_command = ['jobsub_submit_dag', '-G des', '--role=DESGW',  string_command]
 
             start_time_submit_dag = time.time()
             print("Running" + new_command[0])
-            os.system(new_command[0])
-            process = subprocess.Popen(new_command[0], bufsize=1, shell=True, universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            #os.system(new_command)
+            process = subprocess.Popen(new_command, bufsize=1, shell=False, universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             stdout, stderr = process.communicate()
             f = open('dag_submission_'+exp_set[current_exp]+'.out', 'w')
             f.write(stdout)
@@ -768,10 +804,11 @@ def run_dagsh(exps_to_run, finished_exps, exp_set):
     return True
 
 
-if bench_criteria:
-    print("We haven't made the benchmark test exp list yet. This is a placeholder.")
+# if bench_criteria:
+#     print("We haven't made the benchmark test exp list yet. This is a placeholder.")
 
 #     inputted_exp_list = (raw_input("Please input the filepath to your exp.list file, relative to gw_workflow or as a full path: "))
+
 inputted_exp_list = str(args.exp_list_location)
 
 i=0    
