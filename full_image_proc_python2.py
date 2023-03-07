@@ -148,26 +148,29 @@ else:
 
     
 #necessary sourcing
-os.system('./automation_sourcing.sh')
-print('Running sourcing...')
-logging.info('Completed sourcing test')
+#os.system('./automation_sourcing.sh')
+#print('Running sourcing...')
+#logging.info('Completed sourcing test')
 
 #checking to see if exposures.list has been pulled from db
-exp_file = ['../gw_workflow/exposures.list']
+os.chdir('../gw_workflow')
+logging.info('Code now running in gw_workflow.')
+
+exp_file = ['exposures.list']
 if os.path.exists(exp_file[0]):
     logging.info('Found exposures.list. Checking to see if it is empty...')
     if os.path.getsize(exp_file[0]) == 0:
         print("No data found in exposures.list file! Getting the file... (this may take a while)") 
         logging.info('Filesize of exposures.list was empty, pulling it from db')
-        os.system('./exposure_list_sourcing.sh')
+        os.system('./getExposureInfo.sh')
 elif not os.path.exists(exp_file[0]):
         print('Missing exposures.list file. getting the file... (this may take a while)')
         logging.info('Missing exposures.list file. pulling it from db')
-        os.system('./exposure_list_sourcing.sh')
+        os.system('./getExposureInfo.sh')
             
 #changing directory because this code needs to run in gw_workflow
-os.chdir('../gw_workflow')
-logging.info('Code now running in gw_workflow.')
+#os.chdir('../gw_workflow')
+#logging.info('Code now running in gw_workflow.')
 
 
 #test season numbers are 2206 and 2208
@@ -746,12 +749,15 @@ def run_dagsh(exps_to_run, finished_exps, exp_set):
 
             #initialize command
             start_time_make_dag = time.time()
-            command = [dagmaker_file + exp_set[current_exp]]
+            #command = [dagmaker_file + exp_set[current_exp]]
 #             command = ['pwd']
 
             #process for each command 
-            print("Running " + command[0])
-            process = subprocess.Popen(command[0], bufsize=1, shell=True, universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            #print("Running " + command[0])
+            command_string = 'jobsub_submit -G des --role=DESGW file://desgw_pipeline_'+ exp_set[current_exp] + '.dag'
+            print("running " + command_string)
+            process = subprocess.Popen(command_string, bufsize=1, shell=True, universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
             stdout, stderr = process.communicate()
             f = open('dagmaker_'+exp_set[current_exp]+'.out', 'w')
             f.write(stdout)
