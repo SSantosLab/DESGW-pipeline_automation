@@ -25,7 +25,7 @@ try:
     season = lines[1].strip()
 except:
     
-    season = input('Season: ')
+    season = raw_input('Season: ')
 
 
 
