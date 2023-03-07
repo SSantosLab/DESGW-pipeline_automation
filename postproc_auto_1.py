@@ -128,6 +128,8 @@ exposures_to_cont = []
 bandslist = []
 
 for exposure in exposures:
+    print("exposure:"+ exposure)
+
     exposure = exposure.split()
     band = exposure[1]
     exposure = exposure[0]
@@ -175,8 +177,8 @@ for exposure in exposures:
 
     print('\n'+str(Counter(fail_files)))
     
-    if complete_ccds >= 50:
-        print('\nover 50 ' + str(band) + ' ccds completed: acceptable')
+    if complete_ccds >= 29:
+        print('\nover 29 ' + str(band) + ' ccds completed: acceptable')
         num_ccds = complete_ccds
     else:
         print('\nnot enough ccds in exposure ' + str(exposure) + ' for post processing\n')
