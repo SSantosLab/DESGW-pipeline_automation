@@ -1,23 +1,30 @@
-#source ../gw_workflow/setup_img_proc.sh
+#!/bin/bash
 
-export CONDA_DIR=/cvmfs/des.opensciencegrid.org/fnal/anaconda2
-source $CONDA_DIR/etc/profile.d/conda.sh
+#export CONDA_DIR=/cvmfs/des.opensciencegrid.org/fnal/anaconda2
+#source $CONDA_DIR/etc/profile.d/conda.sh
 
-#. /cvmfs/des.opensciencegrid.org/eeups/startupcachejob31i.sh
+#conda activate des18a
 
-. /data/des80.a/data/desgw/BBH_Global/200224/gw_workflow_0310/debugging/startupcachejob31i_nfs_2.sh
-export JOBSUB_PYVER=python2.7-ucs4
-JOBSUB_PYVER=python2.7-ucs4
+#. /data/des80.a/data/desgw/BBH_Global/200224/gw_workflow_0310/debugging/startupcachejob31i_nfs_2.sh
+#export JOBSUB_PYVER=python2.7-ucs4
+#JOBSUB_PYVER=python2.7-ucs4
 
-FILE=../gw_workflow/exposures.list
-#the -s returns true if file exists and has nonzero size
-if [ ! -s "$FILE" ]; then
-    echo "$FILE does not exist. Running ./getExposureInfo.sh..."
-    ./getExposureInfo.sh
-fi
+#echo $CIGETCERTLIBS_DIR
 
-conda activate des20a
+conda activate des18a
 
-python3 full_image_proc.py
+python full_image_proc_python2.py --test_season=y --exp_list_location=../DESGW-pipeline_automation/exposure_228.list --test_season_number=2208 --WRITEDB=on --RNUM=4 --PNUM=7 --DO_HEADER_CHECK=1  
 
-python3 postprocessing_automations.py
+#conda deactivate
+
+#python ppp1
+
+#cd ../Post-Processing/
+
+#source diffimg_setup.sh 
+
+#echo $AUTOSCAN_PYTHON
+
+#cd -
+
+#python ppp2
