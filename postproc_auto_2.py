@@ -16,7 +16,7 @@ import argparse
 import shutil
 import datetime
 from collections import Counter
-
+import subprocess
 
 try:
     img_proc_file = open("./image_proc_outputs/output.txt")
@@ -31,7 +31,9 @@ except:
 
 os.chdir("../Post-Processing")
 
-os.system('. update_forcephoto_links.sh')
+print(os.getcwd())
+
+subprocess.call(['sh', './update_forcephoto_links.sh'])
     
 #run_postproc.py
 
