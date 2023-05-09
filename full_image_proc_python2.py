@@ -780,8 +780,11 @@ def run_dagsh(exps_to_run, finished_exps, exp_set):
 
             cwd = os.getcwd()
             string_command = 'file://desgw_pipeline_'+ exp_set[current_exp] + '.dag'
-            new_command = ['jobsub_submit_dag', '-G des', '--role=DESGW',  string_command]
 
+            if USER == 'desgw':
+              new_command = ['jobsub_submit_dag', '-G des', '--role=desgw',  string_command]
+            else:
+              new_command = ['jobsub_submit_dag', '-G des', '--role=DESGW',  string_command]
             start_time_submit_dag = time.time()
             print("Running" + new_command[0])
             #os.system(new_command)
@@ -823,7 +826,7 @@ while i < 1:
     else:
             i=1
 
-logging.warning("User's inputted exposure list was not found. The inputted exposure list location was" + inputted_exp_list)
+logging.info("Inputted exposure list is " + inputted_exp_list)
 # filepath = 'exposures_jul27.list'
 filepath = inputted_exp_list
 sample_exp_set = EXPlist(filepath)
