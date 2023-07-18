@@ -74,6 +74,5 @@ It then runs run_postproc.py in the form of
 
     nohup python ./Post-Processing/run_postproc.py --outputdir outdir --season '+ str(season)+ ' &> postproc_run.out &'
 
-## How to Use the Repo:
 
 
