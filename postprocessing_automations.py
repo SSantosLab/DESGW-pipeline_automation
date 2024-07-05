@@ -1,4 +1,3 @@
-#danas_automations_:)
 #!/usr/bin/env python
 # coding: utf-8
 
